@@ -4,6 +4,9 @@
   --background: #ffffff;
   --foreground: #171717;
 }
+:root {
+  --font-poppins: "Poppins", sans-serif;
+}
 
 @theme inline {
   --color-background: var(--background);

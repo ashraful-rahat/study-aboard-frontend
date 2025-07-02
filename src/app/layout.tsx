@@ -1,7 +1,8 @@
-import Navbar from "@/components/ui/layout/Navbar";
 import "./globals.css";
-// later
 import type { Metadata } from "next";
+
+import { poppins } from "@/lib/fonts";
+import Navbar from "@/components/ui/layout/Navbar";
 
 export const metadata: Metadata = {
   title: "Study Abroad Website",
@@ -14,11 +15,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${poppins.variable}`}>
       <body>
-        <Navbar />
+        <Navbar></Navbar>
         <main>{children}</main>
-        {/* <Footer /> */}
       </body>
     </html>
   );
