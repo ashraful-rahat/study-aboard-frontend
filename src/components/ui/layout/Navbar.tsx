@@ -1,252 +1,190 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  forwardRef,
-  ReactNode,
-  createContext,
-  useContext,
-  ButtonHTMLAttributes,
-} from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-import clsx from "clsx";
-
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children: ReactNode;
-  variant?: "default" | "ghost";
-  size?: "sm" | "md" | "lg";
-  className?: string;
+// Define a type for your navigation items for better type safety
+interface NavItem {
+  label: string;
+  href: string;
 }
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    { children, variant = "default", size = "md", className = "", ...props },
-    ref
-  ) => {
-    const base =
-      "inline-flex items-center justify-center font-medium focus:outline-none transition";
-    const variants = {
-      default: "bg-blue-600 text-white hover:bg-blue-700",
-      ghost: "bg-transparent hover:bg-gray-100 text-gray-700",
-    };
-    const sizes = {
-      sm: "px-3 py-2 text-sm rounded-lg",
-      md: "px-5 py-3 text-base rounded-xl",
-      lg: "px-8 py-4 text-lg rounded-xl",
-    };
-    return (
-      <button
-        ref={ref}
-        className={clsx(base, variants[variant], sizes[size], className)}
-        {...props}
-      >
-        {children}
-      </button>
-    );
-  }
-);
-Button.displayName = "Button";
+const navItems: NavItem[] = [
+  // Explicitly type navItems as an array of NavItem
+  { label: "Home", href: "/" },
+  { label: "University", href: "/university" },
+  { label: "Country", href: "/country" },
+  { label: "Course", href: "/course" },
+  { label: "Contact", href: "/contact" },
+  { label: "About", href: "/about" },
+  { label: "Blog", href: "/blog" },
+];
 
-// Sheet components
-interface SheetContextProps {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-}
-const SheetContext = createContext<SheetContextProps | undefined>(undefined);
+const linkVariants = {
+  hidden: { opacity: 0, y: -15 },
+  visible: { opacity: 1, y: 0, transition: { ease: "easeOut", duration: 0.3 } },
+};
 
-export function Sheet({
-  open,
-  onOpenChange,
-  children,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  children: ReactNode;
-}) {
-  return (
-    <SheetContext.Provider value={{ open, setOpen: onOpenChange }}>
-      {children}
-    </SheetContext.Provider>
-  );
-}
+const menuVariants = {
+  hidden: {
+    height: 0,
+    opacity: 0,
+    transition: { ease: "easeInOut", duration: 0.3, when: "afterChildren" },
+  },
+  visible: {
+    height: "auto",
+    opacity: 1,
+    transition: {
+      ease: "easeInOut",
+      duration: 0.5,
+      staggerChildren: 0.08,
+      when: "beforeChildren",
+    },
+  },
+};
 
-export function SheetTrigger({
-  asChild,
-  children,
-}: {
-  asChild?: boolean;
-  children: ReactNode;
-}) {
-  const ctx = useContext(SheetContext);
-  if (!ctx) throw new Error("SheetTrigger must be used within a Sheet");
-  const child = React.Children.only(children);
-  if (asChild && React.isValidElement(child)) {
-    return React.cloneElement(
-      child as React.ReactElement<React.HTMLProps<Element>>,
-      {
-        ...(typeof child.props === "object" && child.props !== null
-          ? child.props
-          : {}),
-        onClick: (e: React.MouseEvent) => {
-          if (
-            child.props &&
-            typeof (child.props as { onClick?: (e: React.MouseEvent) => void })
-              .onClick === "function"
-          ) {
-            (
-              child.props as { onClick?: (e: React.MouseEvent) => void }
-            ).onClick?.(e);
-          }
-          ctx.setOpen(true);
-        },
-      }
-    );
-  }
-  return <button onClick={() => ctx.setOpen(true)}>{children}</button>;
-}
-
-export function SheetContent({
-  side = "left",
-  className = "",
-  children,
-}: {
-  side?: "left" | "right";
-  className?: string;
-  children: ReactNode;
-}) {
-  const ctx = useContext(SheetContext);
-  if (!ctx) throw new Error("SheetContent must be used within a Sheet");
-  if (!ctx.open) return null;
-  return (
-    <div
-      className={clsx(
-        "fixed inset-0 z-50 flex",
-        side === "left" ? "justify-start" : "justify-end"
-      )}
-      style={{ background: "rgba(0,0,0,0.2)" }}
-      onClick={() => ctx.setOpen(false)}
-    >
-      <div
-        className={clsx(
-          "bg-white h-full shadow-xl transition-transform duration-300",
-          side === "left" ? "translate-x-0" : "translate-x-0",
-          className
-        )}
-        style={{
-          width: 350,
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  const navItems = [
-    { name: "Home", href: "/" },
-    { name: "University", href: "/university" },
-    { name: "Country", href: "/country" },
-    { name: "Course", href: "/course" },
-    { name: "Contact", href: "/contact" },
-    { name: "About", href: "/about" },
-    { name: "Blog", href: "/blog" },
-  ];
+const Navbar: React.FC = () => {
+  // Explicitly define Navbar as a React Functional Component
+  const [menuOpen, setMenuOpen] = useState<boolean>(false); // Type for useState
+  const [scrolled, setScrolled] = useState<boolean>(false); // Type for useState
+  const pathname: string = usePathname(); // Type for usePathname
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+    const handleScroll = (): void => {
+      // Type for handleScroll function
+      if (window.scrollY > 50) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
     };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Type for isActive function
+  const isActive = (href: string): boolean => {
+    return pathname === href;
+  };
+
   return (
-    <nav
-      className={`fixed w-full top-0 z-50 transition-all duration-300 ${
+    <header
+      className={`fixed top-0 left-0 w-full z-[100] transition-all duration-300 ${
         scrolled
-          ? "bg-white shadow-lg border-b border-gray-200"
-          : "bg-white/95 backdrop-blur-sm"
+          ? "shadow-lg bg-white/95 backdrop-blur-md py-2" // On scroll: slightly transparent white
+          : "shadow-md bg-white py-3" // Initial: solid white
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-        <div className="flex justify-between items-center h-24">
-          {/* Logo */}
-          <div className="flex-shrink-0">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 lg:pb-4 flex justify-between items-center">
+        {/* Removed extra whitespace from previous line */}
+        {/* Logo */}
+        <Link
+          href="/"
+          className={`text-2xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight select-none transition-colors duration-300 text-gray-800 hover:scale-105`} // Logo text always dark gray
+        >
+          Study
+          <span className="text-blue-600">
+            {" "}
+            {/* Removed unnecessary comment within the span */}
+            {/* Accent color always blue */}
+            Abroad
+          </span>
+        </Link>
+        {/* Desktop Menu */}
+        <nav className="hidden md:flex items-center gap-x-6 lg:gap-x-10">
+          {navItems.map(({ label, href }) => (
             <Link
-              href="/"
-              className="text-4xl font-bold text-blue-600 hover:text-blue-700 transition-colors duration-300"
+              key={href}
+              href={href}
+              className={`relative px-2 py-1.5 rounded-md transition-all duration-200 group text-base lg:text-lg font-medium
+                ${
+                  isActive(href)
+                    ? "text-blue-600 font-semibold" // Active: Blue text
+                    : "text-gray-700 hover:text-blue-500" // Normal: Dark gray, Hover: Lighter blue
+                }`}
             >
-              EduPortal
+              {label}
+              {/* Active Indicator (Underline) for Desktop */}
+              {isActive(href) && (
+                <motion.span
+                  layoutId="activeIndicator"
+                  className={`absolute left-0 bottom-0 w-full h-[2px] rounded-full bg-blue-600`} // Always blue underline
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+              {/* Hover Underline for Desktop */}
+              {!isActive(href) && (
+                <span
+                  className={`absolute left-1/2 bottom-0 w-0 h-[1.5px] rounded-full transition-all duration-300 group-hover:w-[80%] group-hover:left-[10%] bg-blue-500`} // Always blue hover underline
+                />
+              )}
             </Link>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="text-gray-700 hover:text-blue-600 px-6 py-4 rounded-xl text-lg font-medium transition-colors duration-300"
-              >
-                {item.name}
-              </Link>
-            ))}
-            <Button className="ml-8 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-colors duration-300 shadow-lg hover:shadow-xl">
-              Get Started
-            </Button>
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="lg:hidden">
-            <Sheet open={isOpen} onOpenChange={setIsOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  className="h-14 w-14 rounded-xl hover:bg-gray-100"
-                >
-                  <Menu className="h-7 w-7 text-gray-700" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[350px] bg-white p-0">
-                <div className="flex flex-col h-full">
-                  <div className="p-8 border-b border-gray-100">
-                    <Link href="/" className="text-3xl font-bold text-blue-600">
-                      EduPortal
-                    </Link>
-                  </div>
-                  <div className="flex-1 py-8">
-                    {navItems.map((item) => (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className="flex items-center px-8 py-5 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 text-lg font-medium"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        {item.name}
-                      </Link>
-                    ))}
-                    <div className="px-8 mt-8">
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-lg font-semibold">
-                        Get Started
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
+          ))}
+        </nav>
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle Menu"
+          className="md:hidden p-2 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-gray-800 hover:bg-gray-100" // Icon always dark gray
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={menuOpen ? "x" : "menu"}
+              initial={{ rotate: 0, opacity: 0 }}
+              animate={{ rotate: menuOpen ? 90 : 0, opacity: 1 }}
+              exit={{ rotate: menuOpen ? 0 : 90, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {menuOpen ? <X size={28} /> : <Menu size={28} />}
+            </motion.div>
+          </AnimatePresence>
+        </button>
       </div>
-    </nav>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.nav
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            variants={menuVariants}
+            className="md:hidden bg-white overflow-hidden px-4 sm:px-6 border-t border-gray-100 shadow-inner" // Mobile menu always white
+          >
+            <motion.ul className="flex flex-col space-y-2 py-4">
+              {navItems.map(({ label, href }) => (
+                <motion.li
+                  key={href}
+                  variants={linkVariants}
+                  className="font-medium px-4"
+                >
+                  <Link
+                    href={href}
+                    onClick={() => setMenuOpen(false)}
+                    className={`block py-3 rounded-lg text-center transition-colors duration-200
+                      ${
+                        isActive(href)
+                          ? "text-blue-600 font-semibold bg-blue-50" // Active: Blue text, light blue background
+                          : "text-gray-700 hover:bg-gray-50" // Normal: Dark gray, Hover: Very light gray background
+                      }`}
+                  >
+                    {label}
+                    {/* Active Indicator for Mobile - Centered and colored */}
+                    {isActive(href) && (
+                      <span className="block w-6 h-0.5 bg-blue-600 rounded-full mt-1 mx-auto" />
+                    )}
+                  </Link>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </motion.nav>
+        )}
+      </AnimatePresence>
+    </header>
   );
 };
 
