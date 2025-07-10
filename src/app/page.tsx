@@ -1,10 +1,10 @@
-import StudyAbroadBanner from "@/components/sections/Banner";
+import Banner from "@/components/sections/Banner";
 import React from "react";
 
 const HomeLayout = () => {
   return (
     <div>
-      <StudyAbroadBanner></StudyAbroadBanner>
+      <Banner></Banner>
     </div>
   );
 };
