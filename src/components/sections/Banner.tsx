@@ -2,7 +2,7 @@
 import React from "react";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // Carousel styles
-
+import Image from "next/image";
 // Define your carousel slides data with pre-designed images
 interface Slide {
   image: string; // Path to the image with text included
@@ -124,13 +124,13 @@ const Banner: React.FC = () => {
       >
         {slides.map((slide, index) => (
           <div key={index} className="relative w-full h-[70vh] md:h-[85vh]">
-            {/* Pre-designed Background Image with text/CTA included */}
-            <img
+            <Image
               src={slide.image}
               alt={slide.alt}
-              className="object-cover w-full h-full"
+              fill
+              className="object-cover"
+              priority // optional: loads image eagerly
             />
-            {/* All text, buttons, and overlays are now part of the image itself */}
           </div>
         ))}
       </Carousel>
