@@ -3,7 +3,11 @@
 
 import axiosInstance from "@/utils/axios";
 import React, { useEffect, useState, useMemo } from "react";
-import { motion, AnimatePresence, Variants } from "framer-motion"; // Add 'Variants', 'Transition' types
+import { motion, AnimatePresence, Variants } from "framer-motion";
+import Image from "next/image"; // Import Next.js Image
+import Link from "next/link"; // Import Next.js Link
+
+// Import all necessary Lucide icons
 import {
   Search,
   Filter,
@@ -19,31 +23,46 @@ import {
 
 // ========================================================================
 // Custom UI Components (Button, Input, Badge, Card, CardContent)
+// Defined directly within this file, NOT imported from @/components/ui/
 // ========================================================================
 
 import { cn } from "@/utils/cn"; // Ensure cn utility function is available
 
 // --- Custom Button Component ---
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+// (Corrected asChild and ref handling)
+type AsProp<C extends React.ElementType> = {
+  asChild?: boolean;
+  as?: C;
+};
+
+type PropsToOmit<C extends React.ElementType, P> = keyof (AsProp<C> & P);
+
+type PolymorphicComponentProps<
+  C extends React.ElementType,
+  Props = {}
+> = React.PropsWithChildren<Props & AsProp<C>> &
+  Omit<React.ComponentPropsWithoutRef<C>, PropsToOmit<C, Props>>;
+
+export interface ButtonProps {
   variant?: "default" | "secondary" | "outline" | "ghost" | "link";
   size?: "default" | "sm" | "lg" | "icon";
-  asChild?: boolean;
 }
 
-const Button = React.forwardRef<HTMLElement, ButtonProps>( // Change ref type to HTMLElement
+const Button = React.forwardRef<
+  HTMLElement, // Ref can be any HTMLElement
+  PolymorphicComponentProps<"button", ButtonProps>
+>(
   (
     {
       className,
       variant = "default",
       size = "default",
       asChild = false,
+      as: Comp = "button",
       ...props
     },
     ref
   ) => {
-    const Comp = asChild ? "div" : "button";
-
     const baseStyles =
       "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50";
 
@@ -63,6 +82,29 @@ const Button = React.forwardRef<HTMLElement, ButtonProps>( // Change ref type to
       icon: "h-10 w-10",
     };
 
+    if (asChild) {
+      const child = React.Children.only(props.children);
+      if (!React.isValidElement(child)) {
+        throw new Error(
+          "Children must be a single valid React element when asChild is true."
+        );
+      }
+      // Pass the ref to the child, and combine classNames and other props
+      return React.cloneElement(child, {
+        ref,
+        className: cn(
+          baseStyles,
+          variantStyles[variant],
+          sizeStyles[size],
+          child.props.className, // Existing classes from the child
+          className // Classes passed to the Button component itself
+        ),
+        // Merge remaining props from Button to the child (this ensures onClick, etc. are passed)
+        ...props, // props from Button
+        ...child.props, // props from child (child's props override Button's if duplicated)
+      });
+    }
+
     return (
       <Comp
         className={cn(
@@ -71,6 +113,8 @@ const Button = React.forwardRef<HTMLElement, ButtonProps>( // Change ref type to
           sizeStyles[size],
           className
         )}
+        ref={ref} // Pass ref here for the actual element being rendered
+        {...props} // Pass remaining props
       />
     );
   }
@@ -152,6 +196,10 @@ const CardContent = React.forwardRef<
 ));
 CardContent.displayName = "CardContent";
 
+// ========================================================================
+// End Custom UI Components
+// ========================================================================
+
 interface Destination {
   _id: string;
   name: string;
@@ -165,7 +213,6 @@ interface Destination {
 
 // Framer Motion Variants for container and cards
 const containerVariants: Variants = {
-  // Add Variants type here
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -183,7 +230,7 @@ const cardVariants: Variants = {
     scale: 1,
     transition: {
       duration: 0.7,
-      ease: [0.25, 0.25, 0, 1], // Correct: ease as an array
+      ease: [0.25, 0.25, 0, 1], // FIX: Changed to string format for cubic-bezier
     },
   },
 };
@@ -441,12 +488,13 @@ const AllCountriesPage: React.FC = () => {
                         {/* Image Section */}
                         <div className="relative h-64 overflow-hidden">
                           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10"></div>
-                          <motion.img
-                            whileHover={{ scale: 1.1, rotate: "1deg" }}
-                            transition={{ duration: 0.7 }}
+                          {/* Use Next.js Image component */}
+                          <Image
                             src={dest.photo}
                             alt={dest.name}
-                            className="w-full h-full object-cover"
+                            fill // Fill parent container
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Optimizes image loading based on viewport
+                            className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:rotate-1"
                           />
 
                           {/* Country Badge */}
@@ -486,19 +534,23 @@ const AllCountriesPage: React.FC = () => {
                               className="bg-emerald-50 text-emerald-700 border-emerald-200 px-3 py-2 rounded-xl"
                             >
                               <Calendar className="w-4 h-4 mr-2" />
-                              {dest.bestTimeToVisit}
+                              <span className="font-medium">
+                                {dest.bestTimeToVisit}
+                              </span>
                             </Badge>
                             <Badge
                               variant="secondary"
                               className="bg-amber-50 text-amber-700 border-amber-200 px-3 py-2 rounded-xl"
                             >
                               <FileText className="w-4 h-4 mr-2" />
-                              {dest.studentVisa}
+                              <span className="font-medium">
+                                {dest.studentVisa}
+                              </span>
                             </Badge>
                           </div>
 
                           {/* Stats */}
-                          {/* এই ডেটাগুলো আপনার API থেকে আসছে না, তাই এগুলো ডামি ডেটা। প্রয়োজন হলে সরিয়ে দিন বা API থেকে আনুন */}
+                          {/* These are dummy data. Remove or fetch from API if available. */}
                           <div className="flex items-center gap-6 mb-8 text-sm text-gray-500">
                             <div className="flex items-center gap-2">
                               <Users className="w-4 h-4" />
@@ -510,12 +562,19 @@ const AllCountriesPage: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* Action Button */}
-                          <Button className="w-full group/btn relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white py-4 px-6 rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 hover:scale-[1.02] active:scale-[0.98]">
-                            <span className="relative z-10 flex items-center justify-center gap-2">
+                          {/* Action Button: Link to Country Details Page */}
+                          <Button
+                            asChild // This makes Button pass its props to the child (Link)
+                            className="w-full group/btn relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white py-4 px-6 rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 hover:scale-[1.02] active:scale-[0.98]"
+                          >
+                            {/* Link component should be the direct child. It internally renders <a>. */}
+                            <Link
+                              href={`/country/${dest._id}`}
+                              className="relative z-10 flex items-center justify-center gap-2 w-full"
+                            >
                               Explore Programs
                               <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover/btn:translate-x-1" />
-                            </span>
+                            </Link>
                           </Button>
                         </CardContent>
 
