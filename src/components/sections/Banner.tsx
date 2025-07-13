@@ -40,6 +40,8 @@ const Banner: React.FC = () => {
         transitionTime={800}
         stopOnHover={true}
         thumbWidth={0}
+        // Add this line to explicitly hide thumbnails, ensuring no black box appears
+        showThumbs={false}
         className="w-full h-full"
         renderArrowPrev={(onClickHandler, hasPrev, label) =>
           hasPrev && (

@@ -1,128 +1,102 @@
-"use client";
+"use client"; // Only if using App Router
 
-import React from "react";
-import Link from "next/link";
+import axiosInstance from "@/utils/axios";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { MovingBorder } from "@/components/ui/moving-border"; // নিশ্চিত করুন এই পাথটি সঠিক
 
-// Define the type for a single country data object
-interface Country {
-  _id: string;
-  name: string;
-  flagImage: string; // Path to the country's flag image (e.g., 1.png, 2.png)
-  description: string;
-}
+const CountrySection = () => {
+  const [destinations, setDestinations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-// Static data for countries - Using your existing flag images from public/images
-const staticCountries: Country[] = [
-  {
-    _id: "usa001",
-    name: "United States",
-    flagImage: "/images/1.png", // Using your 1.png
-    description:
-      "Diverse culture, world-class universities, and leading innovation hubs make the USA a top choice for international students. A land of endless opportunities and academic excellence.",
-  },
-  {
-    _id: "uk003",
-    name: "United Kingdom",
-    flagImage: "/images/2.png", // Using your 2.png
-    description:
-      "Home to some of the oldest and most prestigious universities in the world, offering rich academic traditions and historic cities.",
-  },
-  {
-    _id: "can002",
-    name: "Canada",
-    flagImage: "/images/3.png", // Using your 3.png
-    description:
-      "Known for its welcoming environment, high quality of life, and excellent public education system. A multicultural mosaic offering vibrant student life.",
-  },
-  {
-    _id: "aus004",
-    name: "Australia",
-    flagImage: "/images/4.png", // Using your 4.png
-    description:
-      "Offers a relaxed lifestyle, stunning natural landscapes, and a strong focus on research and innovation.",
-  },
-  {
-    _id: "ger005",
-    name: "Germany",
-    flagImage: "/images/5.png", // Using your 5.png
-    description:
-      "Renowned for its engineering and science programs, with many universities offering free or low-cost tuition and cutting-edge research.",
-  },
-  {
-    _id: "fr006",
-    name: "France",
-    flagImage: "/images/6.png", // Using your 6.png
-    description:
-      "A hub for arts, fashion, and culinary studies, offering a unique cultural experience in beautiful cities.",
-  },
-  {
-    _id: "jp007",
-    name: "Japan",
-    flagImage: "/images/7.jpg", // Using your 7.jpg (assuming it's a flag, even if .jpg)
-    description:
-      "Experience cutting-edge technology, rich traditions, and unique academic opportunities in a land of contrasts.",
-  },
-];
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      try {
+        const res = await axiosInstance.get("/destination");
+        setDestinations(res.data.data); // Update based on your controller response
+      } catch (err) {
+        console.error("Failed to load destinations:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-const CountrySection: React.FC = () => {
-  const countries: Country[] = staticCountries; // Using static data
+    fetchDestinations();
+  }, []);
+
+  if (loading)
+    return <p className="text-center text-lg py-10">Loading destinations...</p>;
 
   return (
-    <section className="py-16 md:py-24 bg-gray-50 text-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-center mb-16 text-gray-900">
-          Explore Top <span className="text-blue-600">Study Destinations</span>
-        </h2>
+    <section className="py-12 bg-gray-50">
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-10">
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-4xl font-extrabold text-gray-800 mb-4"
+          >
+            আমাদের গন্তব্যস্থলসমূহ
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="text-lg text-gray-600 max-w-2xl mx-auto"
+          >
+            বিশ্বের সেরা বিশ্ববিদ্যালয়গুলোতে পড়াশোনা করার জন্য আমাদের
+            নির্বাচিত গন্তব্যস্থলগুলো ঘুরে দেখুন। আপনার স্বপ্নের দেশ খুঁজে নিন।
+          </motion.p>
+        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10">
-          {countries.map((country) => (
-            <motion.div
-              key={country._id}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5 }}
-              className="group relative bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 cursor-pointer
-                         transform transition-all duration-300 hover:shadow-xl hover:-translate-y-2" // Enhanced hover effect
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {destinations.map((dest: any) => (
+            <MovingBorder
+              key={dest._id}
+              containerClassName="rounded-xl p-0.5" // বর্ডার কন্টেইনারের জন্য প্যাডিং এবং রাউন্ডেড কর্ণার
+              className="flex flex-col h-full items-start justify-start p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
             >
-              {/* Top section with Flag Icon and Country Name */}
-              <div
-                className="relative p-6 md:p-8 pt-10 flex flex-col items-center text-center
-                          bg-gradient-to-br from-blue-50 to-indigo-50 border-b border-gray-100"
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.1 * destinations.indexOf(dest),
+                }}
+                whileHover={{
+                  scale: 1.03,
+                  boxShadow: "0 10px 20px rgba(0,0,0,0.15)",
+                }}
+                className="w-full"
               >
-                {" "}
-                {/* Light gradient background */}
-                {/* Flag Icon Container */}
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white shadow-md flex items-center justify-center -mt-10 mb-6 border-4 border-white overflow-hidden">
-                  <img
-                    src={country.flagImage}
-                    alt={`Flag of ${country.name}`}
-                    className="w-full h-full object-contain" // Use object-contain to fit the flag without stretching
-                    onError={(e) => {
-                      e.currentTarget.src =
-                        "https://placehold.co/80x80/e0e0e0/333333?text=Flag"; // Fallback if flag fails
-                    }}
-                  />
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2 leading-tight">
-                  {country.name}
-                </h3>
-              </div>
-
-              {/* Card Content (Description and Link) */}
-              <div className="p-6 md:p-8">
-                <p className="text-gray-700 text-base mb-6 line-clamp-4 leading-relaxed">
-                  {country.description}
+                <img
+                  src={dest.photo}
+                  alt={dest.name}
+                  className="w-full h-48 object-cover rounded-lg mb-4 transform group-hover:scale-105 transition-transform duration-300"
+                />
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  {dest.name}
+                </h2>
+                <p className="text-gray-700 text-base leading-relaxed">
+                  {dest.description.substring(0, 100)}...{" "}
+                  {/* বর্ণনা সংক্ষিপ্ত করা হয়েছে */}
                 </p>
-                <Link
-                  href={`/destination/${country._id}`}
-                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200 group-hover:underline group-hover:underline-offset-4"
-                >
-                  Learn More <span className="ml-1 text-xl">&rarr;</span>
-                </Link>
-              </div>
-            </motion.div>
+                <div className="mt-4 flex flex-wrap gap-2 text-sm text-gray-600">
+                  <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                    {dest.country}
+                  </span>
+                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full">
+                    Best Time: {dest.bestTimeToVisit.split(" ")[0]}{" "}
+                    {/* শুধু প্রথম অংশ দেখানো হয়েছে */}
+                  </span>
+                </div>
+                {/* আরও বিশদ তথ্য বা CTA যোগ করতে পারেন এখানে */}
+                <button className="mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-300">
+                  আরো জানুন
+                </button>
+              </motion.div>
+            </MovingBorder>
           ))}
         </div>
       </div>
