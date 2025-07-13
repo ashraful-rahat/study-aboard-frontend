@@ -1,13 +1,13 @@
 // src/components/sections/CountrySection.tsx
 "use client";
 
-import axiosInstance from "@/utils/axios";
 import React, { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Star, MapPin, Calendar, FileText, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import axiosInstance from "@/utils/axios";
 
 type AsProp<C extends React.ElementType> = {
   asChild?: boolean;

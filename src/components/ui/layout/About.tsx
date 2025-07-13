@@ -30,7 +30,7 @@ const childFadeInVariant: Variants = {
 
 const AboutPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100  py-20">
       <div className="container mx-auto px-6 max-w-7xl">
         {/* Hero Section */}
         <motion.section
