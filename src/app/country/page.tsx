@@ -21,15 +21,8 @@ import {
   Clock,
 } from "lucide-react";
 
-// ========================================================================
-// Custom UI Components (Button, Input, Badge, Card, CardContent)
-// Defined directly within this file, NOT imported from @/components/ui/
-// ========================================================================
-
 import { cn } from "@/utils/cn"; // Ensure cn utility function is available
 
-// --- Custom Button Component ---
-// (Corrected asChild and ref handling)
 type AsProp<C extends React.ElementType> = {
   asChild?: boolean;
   as?: C;
@@ -39,17 +32,20 @@ type PropsToOmit<C extends React.ElementType, P> = keyof (AsProp<C> & P);
 
 type PolymorphicComponentProps<
   C extends React.ElementType,
-  Props = {}
+  Props = { "0": never }
 > = React.PropsWithChildren<Props & AsProp<C>> &
   Omit<React.ComponentPropsWithoutRef<C>, PropsToOmit<C, Props>>;
 
+// Your button-specific props
 export interface ButtonProps {
   variant?: "default" | "secondary" | "outline" | "ghost" | "link";
   size?: "default" | "sm" | "lg" | "icon";
+  className?: string;
 }
 
+// Polymorphic button component
 const Button = React.forwardRef<
-  HTMLElement, // Ref can be any HTMLElement
+  HTMLElement,
   PolymorphicComponentProps<"button", ButtonProps>
 >(
   (
@@ -59,6 +55,7 @@ const Button = React.forwardRef<
       size = "default",
       asChild = false,
       as: Comp = "button",
+      children,
       ...props
     },
     ref
@@ -83,25 +80,26 @@ const Button = React.forwardRef<
     };
 
     if (asChild) {
-      const child = React.Children.only(props.children);
-      if (!React.isValidElement(child)) {
-        throw new Error(
-          "Children must be a single valid React element when asChild is true."
-        );
-      }
-      // Pass the ref to the child, and combine classNames and other props
-      return React.cloneElement(child, {
-        ref,
+      const child = React.Children.only(
+        children
+      ) as React.ReactElement<unknown>;
+
+      // Ensure child.props is typed
+      const typedChild = child as React.ReactElement<
+        { className?: string } & { ref?: React.Ref<HTMLElement> }
+      >;
+
+      return React.cloneElement(typedChild, {
+        ...typedChild.props,
+        ...props,
         className: cn(
           baseStyles,
           variantStyles[variant],
           sizeStyles[size],
-          child.props.className, // Existing classes from the child
-          className // Classes passed to the Button component itself
+          typedChild.props.className,
+          className
         ),
-        // Merge remaining props from Button to the child (this ensures onClick, etc. are passed)
-        ...props, // props from Button
-        ...child.props, // props from child (child's props override Button's if duplicated)
+        ref, // ✅ Now safely typed
       });
     }
 
@@ -113,8 +111,6 @@ const Button = React.forwardRef<
           sizeStyles[size],
           className
         )}
-        ref={ref} // Pass ref here for the actual element being rendered
-        {...props} // Pass remaining props
       />
     );
   }
@@ -195,10 +191,6 @@ const CardContent = React.forwardRef<
   <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
 ));
 CardContent.displayName = "CardContent";
-
-// ========================================================================
-// End Custom UI Components
-// ========================================================================
 
 interface Destination {
   _id: string;
