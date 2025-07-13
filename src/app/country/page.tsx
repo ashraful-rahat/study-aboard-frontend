@@ -71,8 +71,6 @@ const Button = React.forwardRef<HTMLElement, ButtonProps>( // Change ref type to
           sizeStyles[size],
           className
         )}
-        ref={ref as React.Ref<typeof Comp>} // Explicitly cast ref for asChild
-        {...props}
       />
     );
   }
