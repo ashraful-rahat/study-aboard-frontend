@@ -50,13 +50,13 @@ const AboutPage: React.FC = () => {
               Our Journey, Your Future
             </span>
           </motion.div>
-          <h1 className="text-6xl md:text-7xl font-black text-gray-900 leading-tight mb-6">
+          <h1 className="text-6xl md:text-6xl font-black text-gray-900 leading-tight mb-6">
             Pioneering Global Education
             <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Since 2005
             </span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             We are dedicated to transforming lives by connecting ambitious
             students with world-class educational opportunities across the
             globe. Our commitment to excellence, integrity, and personalized

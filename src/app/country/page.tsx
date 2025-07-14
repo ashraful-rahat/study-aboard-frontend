@@ -365,7 +365,7 @@ const AllCountriesPage: React.FC = () => {
               </Badge>
             </motion.div>
 
-            <h1 className="text-7xl md:text-8xl font-black text-gray-900 leading-tight mb-8 tracking-tight">
+            <h1 className="text-7xl md:text-6xl font-black text-gray-900 leading-tight mb-8 tracking-tight">
               <span className="block">Discover Your</span>
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                 Dream Destination
