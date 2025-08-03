@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axiosInstance from "@/utils/axios";
+import { Search, Plus, Edit, Trash2, Eye, Globe, MapPin, Calendar, Upload, X } from "lucide-react";
 
 interface IUniversity {
   _id?: string;
@@ -17,138 +18,17 @@ interface IUniversity {
   __v?: number;
 }
 
-const EditModal = ({
-  isOpen,
-  onClose,
-  data,
-  onChange,
-  onFileChange,
-  onSubmit,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  data: IUniversity;
-  onChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => void;
-  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSubmit: (e: React.FormEvent) => void;
-}) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center p-4">
-      <div className="bg-white p-6 rounded w-full max-w-lg shadow-lg overflow-auto max-h-[90vh]">
-        <h2 className="text-xl font-semibold mb-4">Edit University</h2>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <input
-            type="text"
-            name="name"
-            placeholder="University Name"
-            value={data.name}
-            onChange={onChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-          <textarea
-            name="description"
-            placeholder="Description"
-            value={data.description}
-            onChange={onChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-          <input
-            type="text"
-            name="location"
-            placeholder="Location"
-            value={data.location}
-            onChange={onChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-          <input
-            type="text"
-            name="destinationId"
-            placeholder="Destination ID"
-            value={data.destinationId}
-            onChange={onChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-          <input
-            type="number"
-            name="establishedYear"
-            placeholder="Established Year"
-            value={data.establishedYear || ""}
-            onChange={onChange}
-            className="w-full border p-2 rounded"
-            min={1800}
-            max={new Date().getFullYear()}
-          />
-          <input
-            type="url"
-            name="website"
-            placeholder="Website URL"
-            value={data.website || ""}
-            onChange={onChange}
-            className="w-full border p-2 rounded"
-          />
-          <input
-            type="file"
-            name="photo"
-            accept="image/*"
-            onChange={onFileChange}
-            className="w-full border p-2 rounded"
-          />
-          {data.photo && (
-            <img
-              src={data.photo}
-              alt="Preview"
-              className="mt-2 h-32 rounded object-cover"
-            />
-          )}
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-400 text-white rounded"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-            >
-              Update
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
 const UniversityPage = () => {
-  const [formData, setFormData] = useState<IUniversity>({
-    name: "",
-    description: "",
-    location: "",
-    destinationId: "",
-  });
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [universities, setUniversities] = useState<IUniversity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editData, setEditData] = useState<IUniversity>({
-    name: "",
-    description: "",
-    location: "",
-    destinationId: "",
-  });
-  const [editSelectedFile, setEditSelectedFile] = useState<File | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [selectedUniversity, setSelectedUniversity] = useState<IUniversity | null>(null);
 
   const fetchUniversities = async () => {
     try {
@@ -167,50 +47,12 @@ const UniversityPage = () => {
     fetchUniversities();
   }, []);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        name === "establishedYear"
-          ? value
-            ? Number(value)
-            : undefined
-          : value,
-    }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedFile(e.target.files?.[0] || null);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddUniversity = async (formData: FormData) => {
     try {
-      const formToSend = new FormData();
-
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-          formToSend.append(key, value.toString());
-        }
-      });
-
-      if (selectedFile) formToSend.append("photo", selectedFile);
-
-      await axiosInstance.post("/universities/create-university", formToSend, {
+      await axiosInstance.post("/universities/create-university", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
       alert("University created successfully!");
-      setFormData({
-        name: "",
-        description: "",
-        location: "",
-        destinationId: "",
-      });
-      setSelectedFile(null);
       fetchUniversities();
     } catch (error) {
       console.error(error);
@@ -218,57 +60,12 @@ const UniversityPage = () => {
     }
   };
 
-  const handleEdit = (uni: IUniversity) => {
-    setEditData(uni);
-    setEditingId(uni._id || null);
-    setIsEditModalOpen(true);
-  };
-
-  const handleEditChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setEditData((prev) => ({
-      ...prev,
-      [name]:
-        name === "establishedYear"
-          ? value
-            ? Number(value)
-            : undefined
-          : value,
-    }));
-  };
-
-  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditSelectedFile(e.target.files?.[0] || null);
-  };
-
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingId) return;
-
+  const handleEditUniversity = async (id: string, formData: FormData) => {
     try {
-      const formToSend = new FormData();
-
-      Object.entries(editData).forEach(([key, value]) => {
-        if (
-          key !== "_id" &&
-          value !== undefined &&
-          value !== null &&
-          value !== ""
-        ) {
-          formToSend.append(key, value.toString());
-        }
-      });
-
-      if (editSelectedFile) formToSend.append("photo", editSelectedFile);
-
-      await axiosInstance.patch(`/universities/${editingId}`, formToSend, {
+      await axiosInstance.patch(`/universities/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
       alert("University updated successfully!");
-      setIsEditModalOpen(false);
       fetchUniversities();
     } catch (error) {
       console.error(error);
@@ -276,7 +73,7 @@ const UniversityPage = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDeleteUniversity = async (id: string) => {
     if (!confirm("Are you sure you want to delete this university?")) return;
 
     try {
@@ -289,162 +86,785 @@ const UniversityPage = () => {
     }
   };
 
-  if (loading) return <div className="text-center py-10">Loading...</div>;
-  if (error)
-    return <div className="text-center py-10 text-red-500">{error}</div>;
+  const handleViewUniversity = (university: IUniversity) => {
+    setSelectedUniversity(university);
+    setIsViewModalOpen(true);
+  };
+
+  const handleEditUniversityClick = (university: IUniversity) => {
+    setSelectedUniversity(university);
+    setIsEditModalOpen(true);
+  };
+
+  // Filter universities based on search term
+  const filteredUniversities = universities.filter((uni) =>
+    uni.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    uni.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    uni.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentUniversities = filteredUniversities.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredUniversities.length / itemsPerPage);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-500 text-xl mb-2">Error</div>
+          <div className="text-gray-600">{error}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow rounded">
-      <h1 className="text-2xl font-bold mb-6">University Management</h1>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Universities</h1>
+              <p className="text-gray-600 mt-1">Manage all universities in the system</p>
+            </div>
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Add University
+            </button>
+          </div>
+        </div>
 
-      {/* Create Form */}
-      <form onSubmit={handleSubmit} className="space-y-4 mb-10">
-        <input
-          type="text"
-          name="name"
-          placeholder="University Name"
-          value={formData.name}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <textarea
-          name="description"
-          placeholder="Description"
-          value={formData.description}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          type="text"
-          name="location"
-          placeholder="Location"
-          value={formData.location}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          type="text"
-          name="destinationId"
-          placeholder="Destination ID"
-          value={formData.destinationId}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          type="number"
-          name="establishedYear"
-          placeholder="Established Year"
-          value={formData.establishedYear || ""}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-          min={1800}
-        />
-        <input
-          type="url"
-          name="website"
-          placeholder="Website URL"
-          value={formData.website || ""}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-        />
-        <input
-          type="file"
-          name="photo"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="w-full border p-2 rounded"
-        />
-        {selectedFile && (
-          <img
-            src={URL.createObjectURL(selectedFile)}
-            alt="Preview"
-            className="mt-2 h-32 rounded object-cover"
-          />
-        )}
-        <button
-          type="submit"
-          className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-        >
-          Create University
-        </button>
-      </form>
+        {/* Search and Stats */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search universities..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div className="flex items-center space-x-4 text-sm text-gray-600">
+              <span>Total: {universities.length}</span>
+              <span>Showing: {currentUniversities.length}</span>
+            </div>
+          </div>
+        </div>
 
-      {/* Universities List */}
-      <h2 className="text-xl font-semibold mb-4">Universities</h2>
-      {universities.length === 0 ? (
-        <p>No universities found</p>
-      ) : (
-        <div className="space-y-4">
-          {universities.map((uni) => (
-            <div key={uni._id} className="border p-4 rounded-lg">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold text-lg">{uni.name}</h3>
-                  <p className="text-gray-600">{uni.description}</p>
-                  <div className="mt-2 space-y-1">
-                    <p>
-                      <span className="font-semibold">Location:</span>{" "}
-                      {uni.location}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Established:</span>{" "}
-                      {uni.establishedYear || "N/A"}
-                    </p>
-                    {uni.website && (
-                      <p>
-                        <span className="font-semibold">Website:</span>{" "}
-                        <a
-                          href={uni.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600"
-                        >
-                          {uni.website}
-                        </a>
-                      </p>
-                    )}
-                  </div>
+        {/* Universities Table */}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    University
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Location
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Established
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Website
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {currentUniversities.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                      {searchTerm ? "No universities found matching your search." : "No universities found."}
+                    </td>
+                  </tr>
+                ) : (
+                  currentUniversities.map((university) => (
+                    <tr key={university._id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center">
+                          {university.photo && (
+                            <img
+                              src={university.photo}
+                              alt={university.name}
+                              className="w-12 h-12 rounded-lg object-cover mr-4"
+                            />
+                          )}
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {university.name}
+                            </div>
+                            <div className="text-sm text-gray-500 line-clamp-2">
+                              {university.description}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center text-sm text-gray-900">
+                          <MapPin className="w-4 h-4 mr-2 text-gray-400" />
+                          {university.location}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center text-sm text-gray-900">
+                          <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                          {university.establishedYear || "N/A"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {university.website ? (
+                          <a
+                            href={university.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+                          >
+                            <Globe className="w-4 h-4 mr-2" />
+                            Visit
+                          </a>
+                        ) : (
+                          <span className="text-sm text-gray-400">N/A</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end space-x-2">
+                          <button
+                            onClick={() => handleViewUniversity(university)}
+                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="View Details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleEditUniversityClick(university)}
+                            className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Edit"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => university._id && handleDeleteUniversity(university._id)}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="bg-white px-6 py-4 border-t border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-700">
+                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredUniversities.length)} of {filteredUniversities.length} results
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => handleEdit(uni)}
-                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Edit
+                    Previous
                   </button>
+                  <span className="px-3 py-2 text-sm text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </span>
                   <button
-                    onClick={() => uni._id && handleDelete(uni._id)}
-                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Delete
+                    Next
                   </button>
                 </div>
               </div>
-              {uni.photo && (
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Add University Modal */}
+      <AddUniversityModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={handleAddUniversity}
+      />
+
+      {/* Edit University Modal */}
+      <EditUniversityModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        university={selectedUniversity}
+        onSubmit={handleEditUniversity}
+      />
+
+      {/* View University Modal */}
+      <ViewUniversityModal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        university={selectedUniversity}
+      />
+    </div>
+  );
+};
+
+// Add University Modal Component
+const AddUniversityModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: FormData) => Promise<void>;
+}) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    location: "",
+    destinationId: "",
+    establishedYear: "",
+    website: "",
+  });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedFile(e.target.files?.[0] || null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const formToSend = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value) {
+          formToSend.append(key, value);
+        }
+      });
+      if (selectedFile) {
+        formToSend.append("photo", selectedFile);
+      }
+      
+      await onSubmit(formToSend);
+      setFormData({
+        name: "",
+        description: "",
+        location: "",
+        destinationId: "",
+        establishedYear: "",
+        website: "",
+      });
+      setSelectedFile(null);
+      onClose();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-2xl font-bold text-gray-800">Add New University</h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                University Name *
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Location *
+              </label>
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Destination ID *
+              </label>
+              <input
+                type="text"
+                name="destinationId"
+                value={formData.destinationId}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Established Year
+              </label>
+              <input
+                type="number"
+                name="establishedYear"
+                value={formData.establishedYear}
+                onChange={handleChange}
+                min={1800}
+                max={new Date().getFullYear()}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Website URL
+              </label>
+              <input
+                type="url"
+                name="website"
+                value={formData.website}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Description *
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows={4}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                University Photo
+              </label>
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center px-4 py-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <Upload className="w-5 h-5 mr-2" />
+                  Choose File
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+                {selectedFile && (
+                  <span className="text-sm text-gray-600">{selectedFile.name}</span>
+                )}
+              </div>
+              {selectedFile && (
                 <img
-                  src={uni.photo}
-                  alt={uni.name}
-                  className="mt-3 w-full max-w-xs rounded-lg"
+                  src={URL.createObjectURL(selectedFile)}
+                  alt="Preview"
+                  className="mt-3 h-32 rounded-lg object-cover"
                 />
               )}
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+          
+          <div className="flex justify-end space-x-3 pt-4 border-t">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-3 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center"
+            >
+              {loading ? "Creating..." : "Create University"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
-      {/* Edit Modal */}
-      <EditModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        data={editData}
-        onChange={handleEditChange}
-        onFileChange={handleEditFileChange}
-        onSubmit={handleEditSubmit}
-      />
+// Edit University Modal Component
+const EditUniversityModal = ({
+  isOpen,
+  onClose,
+  university,
+  onSubmit,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  university: IUniversity | null;
+  onSubmit: (id: string, data: FormData) => Promise<void>;
+}) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    location: "",
+    destinationId: "",
+    establishedYear: "",
+    website: "",
+  });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (university) {
+      setFormData({
+        name: university.name,
+        description: university.description,
+        location: university.location,
+        destinationId: university.destinationId,
+        establishedYear: university.establishedYear?.toString() || "",
+        website: university.website || "",
+      });
+    }
+  }, [university]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedFile(e.target.files?.[0] || null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!university?._id) return;
+    
+    setLoading(true);
+    try {
+      const formToSend = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value) {
+          formToSend.append(key, value);
+        }
+      });
+      if (selectedFile) {
+        formToSend.append("photo", selectedFile);
+      }
+      
+      await onSubmit(university._id, formToSend);
+      setSelectedFile(null);
+      onClose();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen || !university) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-2xl font-bold text-gray-800">Edit University</h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                University Name *
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Location *
+              </label>
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Destination ID *
+              </label>
+              <input
+                type="text"
+                name="destinationId"
+                value={formData.destinationId}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Established Year
+              </label>
+              <input
+                type="number"
+                name="establishedYear"
+                value={formData.establishedYear}
+                onChange={handleChange}
+                min={1800}
+                max={new Date().getFullYear()}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Website URL
+              </label>
+              <input
+                type="url"
+                name="website"
+                value={formData.website}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Description *
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows={4}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                University Photo
+              </label>
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center px-4 py-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <Upload className="w-5 h-5 mr-2" />
+                  Choose File
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+                {selectedFile && (
+                  <span className="text-sm text-gray-600">{selectedFile.name}</span>
+                )}
+              </div>
+              {(selectedFile || university.photo) && (
+                <img
+                  src={selectedFile ? URL.createObjectURL(selectedFile) : university.photo}
+                  alt="Preview"
+                  className="mt-3 h-32 rounded-lg object-cover"
+                />
+              )}
+            </div>
+          </div>
+          
+          <div className="flex justify-end space-x-3 pt-4 border-t">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-3 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center"
+            >
+              {loading ? "Updating..." : "Update University"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// View University Modal Component
+const ViewUniversityModal = ({
+  isOpen,
+  onClose,
+  university,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  university: IUniversity | null;
+}) => {
+  if (!isOpen || !university) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-2xl font-bold text-gray-800">University Details</h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="p-6 space-y-6">
+          {university.photo && (
+            <div className="w-full h-48 rounded-lg overflow-hidden">
+              <img
+                src={university.photo}
+                alt={university.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">{university.name}</h3>
+              <p className="text-gray-600 leading-relaxed">{university.description}</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center space-x-3">
+                <MapPin className="w-5 h-5 text-gray-500" />
+                <div>
+                  <p className="text-sm text-gray-500">Location</p>
+                  <p className="font-medium">{university.location}</p>
+                </div>
+              </div>
+              
+              {university.establishedYear && (
+                <div className="flex items-center space-x-3">
+                  <Calendar className="w-5 h-5 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-500">Established</p>
+                    <p className="font-medium">{university.establishedYear}</p>
+                  </div>
+                </div>
+              )}
+              
+              {university.website && (
+                <div className="flex items-center space-x-3 md:col-span-2">
+                  <Globe className="w-5 h-5 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-500">Website</p>
+                    <a
+                      href={university.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-blue-600 hover:underline"
+                    >
+                      {university.website}
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
