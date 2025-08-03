@@ -30,7 +30,7 @@ const childFadeInVariant: Variants = {
 
 const AboutPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100  py-20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 pt-20 pb-20">
       <div className="container mx-auto px-6 max-w-7xl">
         {/* Hero Section */}
         <motion.section
@@ -52,7 +52,7 @@ const AboutPage: React.FC = () => {
           </motion.div>
           <h1 className="text-6xl md:text-6xl font-black text-gray-900 leading-tight mb-6">
             Pioneering Global Education
-            <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-orange-400 to-orange-800 bg-clip-text text-transparent">
               Since 2005
             </span>
           </h1>
@@ -107,3 +107,11 @@ const AboutPage: React.FC = () => {
 };
 
 export default AboutPage;
+
+// import React from "react";
+
+// const About = () => {
+//   return <div>about</div>;
+// };
+
+// export default About;

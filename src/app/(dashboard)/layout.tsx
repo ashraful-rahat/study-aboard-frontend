@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { AppSidebar } from "./AppSidebar";
 import DashboardHeader from "./DashboardHeader";
+import { Toaster } from "sonner"; // ✅ import Toaster
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
@@ -13,6 +14,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <DashboardHeader />
 
         <main className="flex-1 p-6 md:p-8 overflow-y-auto">{children}</main>
+
+        {/* ✅ Place Toaster at the root of layout */}
+        <Toaster richColors position="top-right" />
       </div>
     </div>
   );

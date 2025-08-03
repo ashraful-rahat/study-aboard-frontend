@@ -163,7 +163,7 @@ const CourseSection = () => {
                 onValueChange={(value) => setProgramTypeFilter(value)}
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Program Type">
+                  <SelectValue>
                     {programTypeFilter || "Program Type"}
                   </SelectValue>
                 </SelectTrigger>
@@ -184,9 +184,7 @@ const CourseSection = () => {
                 onValueChange={(value) => setCategoryFilter(value)}
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Category">
-                    {categoryFilter || "Category"}
-                  </SelectValue>
+                  <SelectValue>{categoryFilter || "Category"}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">All Categories</SelectItem>

@@ -1,12 +1,10 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
-import { Globe, Search, Filter } from "lucide-react";
+import Image from "next/image"; // Import Image component
+import Link from "next/link"; // Import Link component
+import { MapPin, ExternalLink } from "lucide-react";
 
-import { Badge } from "../ui/badge";
-import { Input } from "../ui/input";
 import axiosInstance from "@/utils/axios";
 
 interface University {
@@ -20,19 +18,20 @@ interface University {
   destinationId: string;
 }
 
-const UniversityExplorer = () => {
+const UniversityShowcase = () => {
   const [universities, setUniversities] = useState<University[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("all");
 
   useEffect(() => {
     const fetchUniversities = async () => {
       try {
-        const res = await axiosInstance.get("/university");
-        setUniversities(res.data.data);
+        const res = await axiosInstance.get("/universities");
+        // Limit to first 6 universities for homepage
+        setUniversities(res.data.data.slice(0, 6));
       } catch (err) {
         console.error("Failed to fetch universities:", err);
+        // Fallback data for development if API fails
+        setUniversities([]);
       } finally {
         setLoading(false);
       }
@@ -41,213 +40,132 @@ const UniversityExplorer = () => {
     fetchUniversities();
   }, []);
 
-  // Get unique countries for filter
-  const uniqueCountries = [
-    ...new Set(universities.map((u) => u.location.split(",")[0])),
-  ];
-
-  // Filter universities based on search and country selection
-  const filteredUniversities = universities.filter((university) => {
-    const matchesSearch =
-      university.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      university.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCountry =
-      selectedCountry === "all" ||
-      university.location.startsWith(selectedCountry);
-    return matchesSearch && matchesCountry;
-  });
-
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full"
-        />
-      </div>
+      <section className="py-16 bg-gradient-to-br from-education-light to-background">
+        <div className="container mx-auto px-6">
+          {/* Adjusted grid for loading skeleton to match display grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-card rounded-xl shadow-card p-6 ">
+                <div className="h-40 bg-muted rounded-lg mb-4"></div>
+                <div className="h-4 bg-muted rounded mb-2"></div>
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-20 pb-16">
-        <div className="absolute inset-0">
-          {/* Animated background blobs */}
-          <div className="absolute top-0 left-0 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
+    <section className="py-16 bg-gradient-to-br from-education-light to-background">
+      <div className="container mx-auto px-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+            Discover Top <br />
+            <span className="bg-gradient-to-r from-orange-500 to-orange-800 bg-clip-text text-transparent">
+              Universities
+            </span>
+          </h2>
 
-        <div className="container mx-auto px-6 max-w-7xl relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="text-center mb-16"
-          >
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            Explore world-class institutions and find your perfect academic
+            destination
+          </p>
+        </motion.div>
+
+        {/* Universities Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {universities.map((university, index) => (
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.8, type: "spring" }}
-              className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg mb-8 border border-white/20"
+              key={university._id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.5 }}
+              viewport={{ once: true }}
+              whileHover={{
+                y: -8, // Lifts the card up by 8px on hover
+                boxShadow:
+                  "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)", // Custom strong shadow
+              }}
+              className="group bg-card rounded-xl shadow-card transition-all duration-300 overflow-hidden border border-border/50"
             >
-              <Globe
-                className="w-6 h-6 text-blue-600 animate-spin"
-                style={{ animationDuration: "3s" }}
-              />
-              <span className="text-sm font-semibold text-gray-700">
-                Explore Global Education
-              </span>
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                {universities.length} Universities
-              </Badge>
-            </motion.div>
-
-            <h1 className="text-5xl md:text-7xl font-black text-gray-900 leading-tight mb-8 tracking-tight">
-              <span className="block">Discover World-Class</span>
-              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Universities
-              </span>
-            </h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed mb-12"
-            >
-              From historic institutions to cutting-edge research centers, find
-              your perfect academic home across the globe.
-            </motion.p>
-
-            {/* Search and Filter Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-              className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto"
-            >
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  placeholder="Search universities or locations..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 h-14 text-lg bg-white/80 backdrop-blur-sm border-white/20 shadow-lg rounded-2xl"
+              {/* University Image */}
+              <div className="relative h-48 overflow-hidden">
+                <Image // Using Next.js Image component
+                  src={university.photo || "/placeholder.svg"}
+                  alt={university.name}
+                  fill // Image takes full size of parent div
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" // Optimized sizes for responsive images
+                  priority={index < 3} // Prioritize loading for the first few images
                 />
-              </div>
-
-              <div className="relative">
-                <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <select
-                  value={selectedCountry}
-                  onChange={(e) => setSelectedCountry(e.target.value)}
-                  className="pl-12 pr-8 h-14 text-lg bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg rounded-2xl appearance-none cursor-pointer min-w-[200px]"
-                >
-                  <option value="all">All Countries</option>
-                  {uniqueCountries.map((country) => (
-                    <option key={country} value={country}>
-                      {country}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Universities Grid */}
-      <section className="pb-20">
-        <div className="container mx-auto px-6 max-w-7xl">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.8 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          >
-            {filteredUniversities.map((university, index) => (
-              <motion.div
-                key={university._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * index }}
-                whileHover={{ y: -5 }}
-                className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-shadow"
-              >
-                <div className="relative h-48 overflow-hidden">
-                  <Image
-                    src={university.photo || "/placeholder.svg"}
-                    alt={university.name}
-                    fill
-                    className="object-cover"
-                    priority={index < 3}
-                  />
-                  <div className="absolute bottom-0 left-0 bg-gradient-to-t from-black/70 to-transparent w-full h-1/3 p-4 flex items-end">
-                    <h3 className="text-white font-bold text-xl">
-                      {university.name}
-                    </h3>
-                  </div>
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold shadow">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm px-2 py-1 rounded-full">
+                  <span className="text-xs font-medium text-foreground">
                     Est. {university.establishedYear}
-                  </div>
+                  </span>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <h3 className="font-bold text-lg text-foreground mb-2 group-hover:text-education-blue transition-colors">
+                  {university.name}
+                </h3>
+
+                <div className="flex items-center text-muted-foreground text-sm mb-3">
+                  <MapPin className="w-4 h-4 mr-1" />
+                  <span>{university.location}</span>
                 </div>
 
-                <div className="p-6">
-                  <div className="flex items-center text-gray-500 text-sm mb-4">
-                    <svg
-                      className="w-4 h-4 mr-1 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                    </svg>
-                    <span>{university.location}</span>
-                  </div>
+                <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                  {university.description}
+                </p>
 
-                  <p className="text-gray-600 text-sm mb-6 line-clamp-3">
-                    {university.description}
-                  </p>
-
-                  <a
-                    href={university.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
-                  >
-                    Visit Website
-                    <svg
-                      className="w-4 h-4 ml-1"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3m-2 16H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7Z" />
-                    </svg>
-                  </a>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {filteredUniversities.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-12"
-            >
-              <h3 className="text-xl font-medium text-gray-600 mb-2">
-                No universities found
-              </h3>
-              <p className="text-gray-500">
-                Try adjusting your search or filter criteria
-              </p>
+                {/* Link to external website */}
+                <a
+                  href={university.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-education-blue hover:text-education-orange font-medium text-sm transition-colors group/link"
+                >
+                  Visit Website
+                  <ExternalLink className="w-4 h-4 ml-1 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+                </a>
+              </div>
             </motion.div>
-          )}
+          ))}
         </div>
-      </section>
-    </div>
+
+        {/* CTA Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center"
+        >
+          {/* Updated Link to /universities page using Next.js Link */}
+          <Link
+            href="/register"
+            className="block mx-4 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white text-center font-semibold rounded-full transition-all duration-200 shadow-lg"
+          >
+            Register Now
+          </Link>
+        </motion.div>
+      </div>
+    </section>
   );
 };
 
-export default UniversityExplorer;
+export default UniversityShowcase;

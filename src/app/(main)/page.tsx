@@ -1,16 +1,20 @@
 import Banner from "@/components/sections/Banner";
 import CountrySection from "@/components/sections/CountrySection";
+import Step from "@/components/sections/Step";
+import UniversityExplorer from "@/components/sections/UniversitySection";
 import AboutPage from "@/components/ui/layout/About";
-
-import React from "react";
 
 const HomeLayout = () => {
   return (
-    <div>
-      <Banner></Banner>
-      <AboutPage></AboutPage>
-      <CountrySection></CountrySection>
-    </div>
+    <main className="">
+      <Banner />
+      <CountrySection />
+      <Step />
+      <UniversityExplorer></UniversityExplorer>
+      <AboutPage />
+
+      {/* You can add more sections here as needed */}
+    </main>
   );
 };
 

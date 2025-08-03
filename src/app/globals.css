@@ -39,9 +39,6 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 }
-:root {
-  --font-poppins: "Poppins", sans-serif;
-}
 
 @theme inline {
   --color-background: var(--background);
@@ -136,7 +133,6 @@
   body {
     @apply bg-background text-foreground;
     
-    font-family: var(--font-poppins);
 
   }
 }

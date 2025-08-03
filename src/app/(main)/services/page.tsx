@@ -1,7 +1,7 @@
 import React from "react";
 
 const page = () => {
-  return <div>country details page </div>;
+  return <div>schoolership</div>;
 };
 
 export default page;

@@ -1,50 +1,169 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useState } from "react";
 import axiosInstance from "@/utils/axios";
 import Image from "next/image";
-interface Destination {
-  _id: string;
-  name: string;
-  country: string;
-  photo?: string;
-}
-
-interface FormState {
+interface IDestination {
+  _id?: string;
   name: string;
   description: string;
   country: string;
-  photoFile: File | null;
+  photo?: string;
   bestTimeToVisit?: string;
   visaRequirements?: string;
-  studentVisa?: string;
+  studentVisa?: string | null;
 }
 
-export default function DestinationDashboard() {
-  const [form, setForm] = useState<FormState>({
+// Modal Component for Editing
+const EditModal = ({
+  isOpen,
+  onClose,
+  data,
+  onChange,
+  onFileChange,
+  onSubmit,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  data: IDestination;
+  onChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSubmit: (e: React.FormEvent) => void;
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
+      <div className="bg-white p-6 rounded w-full max-w-lg shadow-lg">
+        <h2 className="text-xl font-semibold mb-4">Edit Destination</h2>
+        <form onSubmit={onSubmit} className="space-y-4">
+          <input
+            type="text"
+            name="name"
+            placeholder="Destination Name"
+            value={data.name}
+            onChange={onChange}
+            className="w-full border p-2 rounded"
+            required
+          />
+          <textarea
+            name="description"
+            placeholder="Description"
+            value={data.description}
+            onChange={onChange}
+            className="w-full border p-2 rounded"
+            required
+          />
+          <input
+            type="text"
+            name="country"
+            placeholder="Country"
+            value={data.country}
+            onChange={onChange}
+            className="w-full border p-2 rounded"
+            required
+          />
+          <input
+            type="file"
+            name="photo"
+            accept="image/*"
+            onChange={onFileChange}
+            className="w-full border p-2 rounded"
+          />
+          {data.photo && (
+            <img
+              src={data.photo}
+              alt="Preview"
+              className="mt-2 h-32 rounded object-cover"
+            />
+          )}
+          <input
+            type="text"
+            name="bestTimeToVisit"
+            placeholder="Best Time to Visit"
+            value={data.bestTimeToVisit || ""}
+            onChange={onChange}
+            className="w-full border p-2 rounded"
+          />
+          <input
+            type="text"
+            name="visaRequirements"
+            placeholder="Visa Requirements"
+            value={data.visaRequirements || ""}
+            onChange={onChange}
+            className="w-full border p-2 rounded"
+          />
+          <input
+            type="text"
+            name="studentVisa"
+            placeholder="Student Visa Info"
+            value={data.studentVisa || ""}
+            onChange={onChange}
+            className="w-full border p-2 rounded"
+          />
+
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-400 text-white rounded"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            >
+              Update
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const CountryPage = () => {
+  // Create Form State
+  const [formData, setFormData] = useState<IDestination>({
     name: "",
     description: "",
     country: "",
-    photoFile: null,
+    photo: "",
     bestTimeToVisit: "",
     visaRequirements: "",
     studentVisa: "",
   });
 
-  const [destinations, setDestinations] = useState<Destination[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  // Destinations list state
+  const [destinations, setDestinations] = useState<IDestination[]>([]);
+
+  // Edit modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<IDestination>({
+    name: "",
+    description: "",
+    country: "",
+    photo: "",
+    bestTimeToVisit: "",
+    visaRequirements: "",
+    studentVisa: "",
+  });
+  const [editSelectedFile, setEditSelectedFile] = useState<File | null>(null);
+
+  // Fetch all destinations from backend
   const fetchDestinations = async () => {
     try {
       const res = await axiosInstance.get("/destination");
-      setDestinations(res.data.data || []);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
-      console.error("Failed to fetch destinations");
+      setDestinations(res.data.data);
+    } catch (error) {
+      console.error("Failed to fetch destinations:", error);
+      alert("Failed to fetch destinations");
     }
   };
 
@@ -52,190 +171,275 @@ export default function DestinationDashboard() {
     fetchDestinations();
   }, []);
 
+  // Handle change for create form inputs
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Handle file input for create form
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setForm((prev) => ({ ...prev, photoFile: e.target.files![0] }));
-    }
+    const file = e.target.files?.[0];
+    setSelectedFile(file || null);
   };
 
+  // Submit create form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(false);
 
     try {
-      const formData = new FormData();
-      formData.append("name", form.name);
-      formData.append("description", form.description);
-      formData.append("country", form.country);
-      if (form.photoFile) formData.append("photo", form.photoFile);
-      if (form.bestTimeToVisit)
-        formData.append("bestTimeToVisit", form.bestTimeToVisit);
-      if (form.visaRequirements)
-        formData.append("visaRequirements", form.visaRequirements);
-      if (form.studentVisa) formData.append("studentVisa", form.studentVisa);
+      const formToSend = new FormData();
 
-      await axiosInstance.post("/destination/create-destination", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value) formToSend.append(key, value);
       });
 
-      setSuccess(true);
-      setShowModal(false);
-      setForm({
+      if (selectedFile) {
+        formToSend.append("photo", selectedFile);
+      }
+
+      await axiosInstance.post("/destination/create-destination", formToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      alert("Destination created!");
+      setFormData({
         name: "",
         description: "",
         country: "",
-        photoFile: null,
+        photo: "",
         bestTimeToVisit: "",
         visaRequirements: "",
         studentVisa: "",
       });
+      setSelectedFile(null);
       fetchDestinations();
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to submit");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong while creating.");
+    }
+  };
+
+  // Open edit modal and load data
+  const handleEdit = (dest: IDestination) => {
+    setEditData(dest);
+    setEditingId(dest._id || null);
+    setEditSelectedFile(null);
+    setIsEditModalOpen(true);
+  };
+
+  // Edit modal input change handler
+  const handleEditChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setEditData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Edit modal file input change handler
+  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setEditSelectedFile(file || null);
+  };
+
+  // Submit edit modal form
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!editingId) return;
+
+    try {
+      const formToSend = new FormData();
+
+      // Append all editable fields
+      Object.entries(editData).forEach(([key, value]) => {
+        if (key !== "_id" && value) formToSend.append(key, value);
+      });
+
+      // Append new photo if selected
+      if (editSelectedFile) {
+        formToSend.append("photo", editSelectedFile);
+      }
+
+      await axiosInstance.patch(`/destination/${editingId}`, formToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      alert("Destination updated!");
+      setIsEditModalOpen(false);
+      setEditingId(null);
+      setEditSelectedFile(null);
+      fetchDestinations();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if (error.response) {
+        alert(
+          "Update failed: " + (error.response.data.message || "Unknown error")
+        );
+      } else {
+        alert("Something went wrong while updating.");
+      }
+      console.error(error);
+    }
+  };
+
+  // Delete destination
+  const handleDelete = async (id: string) => {
+    if (confirm("Are you sure you want to delete this destination?")) {
+      try {
+        await axiosInstance.delete(`/destination/${id}`);
+        alert("Destination deleted!");
+        fetchDestinations();
+      } catch (error) {
+        console.error(error);
+        alert("Failed to delete.");
+      }
     }
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Destinations</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          + Add Destination
-        </button>
-      </div>
+    <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow rounded">
+      <h1 className="text-2xl font-bold mb-6">Add Destination</h1>
 
-      {/* Destination Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {destinations.map((d) => (
-          <div
-            key={d._id}
-            className="bg-white shadow-md rounded-xl overflow-hidden border hover:shadow-lg transition duration-300"
-          >
-            {d.photo && (
-              <div className="relative w-full h-48">
-                <Image
-                  src={d.photo}
-                  alt={d.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  priority
-                />
-              </div>
-            )}
-            <div className="p-4">
-              <h2 className="text-xl font-semibold text-gray-800">{d.name}</h2>
-              <p className="text-sm text-gray-500">{d.country}</p>
-            </div>
-          </div>
-        ))}
-
-        {destinations.length === 0 && (
-          <p className="text-gray-600 col-span-full text-center text-lg">
-            No destinations added yet.
-          </p>
+      {/* Create Form */}
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 mb-10"
+        encType="multipart/form-data"
+      >
+        <input
+          type="text"
+          name="name"
+          placeholder="Destination Name"
+          value={formData.name}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+          required
+        />
+        <textarea
+          name="description"
+          placeholder="Description"
+          value={formData.description}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+          required
+        />
+        <input
+          type="text"
+          name="country"
+          placeholder="Country"
+          value={formData.country}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+          required
+        />
+        <input
+          type="file"
+          name="photo"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="w-full border p-2 rounded"
+        />
+        {selectedFile && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={URL.createObjectURL(selectedFile)}
+            alt="Preview"
+            className="mt-2 h-32 rounded object-cover"
+          />
         )}
-      </div>
+        <input
+          type="text"
+          name="bestTimeToVisit"
+          placeholder="Best Time to Visit"
+          value={formData.bestTimeToVisit}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        />
+        <input
+          type="text"
+          name="visaRequirements"
+          placeholder="Visa Requirements"
+          value={formData.visaRequirements}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        />
+        <input
+          type="text"
+          name="studentVisa"
+          placeholder="Student Visa Info"
+          value={formData.studentVisa || ""}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        />
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-xl relative">
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-xl"
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition"
+        >
+          Submit
+        </button>
+      </form>
+
+      {/* Edit Modal */}
+      <EditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        data={editData}
+        onChange={handleEditChange}
+        onFileChange={handleEditFileChange}
+        onSubmit={handleEditSubmit}
+      />
+
+      <div>
+        <h2 className="text-xl font-semibold mb-4">All Destinations</h2>
+        <ul className="space-y-3">
+          {destinations.map((dest) => (
+            <li
+              key={dest._id}
+              className="border p-4 rounded shadow-sm flex justify-between items-center"
             >
-              ✕
-            </button>
-            <h2 className="text-xl font-bold mb-4">Add New Destination</h2>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <input
-                type="text"
-                name="name"
-                placeholder="Name"
-                value={form.name}
-                onChange={handleChange}
-                required
-                className="w-full p-2 border rounded"
-              />
-              <textarea
-                name="description"
-                placeholder="Description"
-                value={form.description}
-                onChange={handleChange}
-                required
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="text"
-                name="country"
-                placeholder="Country"
-                value={form.country}
-                onChange={handleChange}
-                required
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="text"
-                name="bestTimeToVisit"
-                placeholder="Best Time to Visit"
-                value={form.bestTimeToVisit}
-                onChange={handleChange}
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="text"
-                name="visaRequirements"
-                placeholder="Visa Requirements"
-                value={form.visaRequirements}
-                onChange={handleChange}
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="text"
-                name="studentVisa"
-                placeholder="Student Visa"
-                value={form.studentVisa}
-                onChange={handleChange}
-                className="w-full p-2 border rounded"
-              />
-              {error && <p className="text-red-600">{error}</p>}
-              {success && (
-                <p className="text-green-600">
-                  Destination added successfully!
-                </p>
-              )}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-              >
-                {loading ? "Saving..." : "Submit"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+              <div>
+                <p className="font-bold">{dest.name}</p>
+                <p className="text-sm text-gray-600">{dest.country}</p>
+
+                {dest.photo && (
+                  <Image
+                    src={dest.photo}
+                    alt={dest.name}
+                    width={150} // width অবশ্যই দিতে হবে
+                    height={96} // height অবশ্যই দিতে হবে (aspect ratio অনুসারে)
+                    className="mt-2 rounded object-cover"
+                    style={{ objectFit: "cover" }}
+                  />
+                )}
+              </div>
+              <div className="space-x-2">
+                <button
+                  onClick={() => handleEdit(dest)}
+                  className="text-blue-600 hover:underline"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(dest._id!)}
+                  className="text-red-600 hover:underline"
+                >
+                  Delete
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
-}
+};
+
+export default CountryPage;
