@@ -63,3 +63,51 @@ export interface UniversityUpdateInput {
   website?: string;
   photo?: string;
 }
+
+export interface Course {
+  _id: string;
+  name: string;
+  description: string;
+  duration: string;
+  tuitionFee: number;
+  universityId: string;
+  photo: string;
+  programType?: string;
+  category?: string;
+}
+
+export interface Application {
+  _id: string;
+  user: string;
+  course: string;
+  university: string;
+  destination?: string;
+  documents?: string;
+  photo?: string;
+  status?: 'pending' | 'approved' | 'rejected';
+  remarks?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApplicationInput {
+  user: string;
+  course: string;
+  university: string;
+  destination?: string;
+  documents?: string;
+  photo?: string;
+  status?: 'pending' | 'approved' | 'rejected';
+  remarks?: string | null;
+}
+
+export interface ApplicationUpdateInput {
+  user?: string;
+  course?: string;
+  university?: string;
+  destination?: string;
+  documents?: string;
+  photo?: string;
+  status?: 'pending' | 'approved' | 'rejected';
+  remarks?: string | null;
+}
