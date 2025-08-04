@@ -82,10 +82,16 @@ export interface Application {
   course: string;
   university: string;
   destination?: string;
-  documents?: string;
+  sscResult?: string;
+  hscResult?: string;
+  ieltsResult?: string;
+  scoreResult?: string;
+  studentNumber?: string;
+  email?: string;
   photo?: string;
   status?: 'pending' | 'approved' | 'rejected';
   remarks?: string | null;
+  background?: 'science' | 'commerce' | 'arts';
   createdAt: string;
   updatedAt: string;
 }
@@ -95,10 +101,16 @@ export interface ApplicationInput {
   course: string;
   university: string;
   destination?: string;
-  documents?: string;
+  sscResult?: string;
+  hscResult?: string;
+  ieltsResult?: string;
+  scoreResult?: string;
+  studentNumber?: string;
+  email?: string;
   photo?: string;
   status?: 'pending' | 'approved' | 'rejected';
   remarks?: string | null;
+  background?: 'science' | 'commerce' | 'arts';
 }
 
 export interface ApplicationUpdateInput {
@@ -106,8 +118,14 @@ export interface ApplicationUpdateInput {
   course?: string;
   university?: string;
   destination?: string;
-  documents?: string;
+  sscResult?: string;
+  hscResult?: string;
+  ieltsResult?: string;
+  scoreResult?: string;
+  studentNumber?: string;
+  email?: string;
   photo?: string;
   status?: 'pending' | 'approved' | 'rejected';
   remarks?: string | null;
+  background?: 'science' | 'commerce' | 'arts';
 }

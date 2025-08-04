@@ -1,36 +1,34 @@
 "use client";
 
 import React, { useState } from "react";
-import axios from "axios";
+import axiosInstance from "@/utils/axios";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
+  const router = useRouter(); // ✅ router ব্যবহার করতে হলে এটি লাগবে
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError("");
     try {
-      const res = await axios.post("http://localhost:5000/api/v1/auth/login", {
+      const res = await axiosInstance.post("/auth/login", {
         email,
         password,
       });
 
       if (res.data.success) {
         const { accessToken } = res.data.data;
-        // Save token to localStorage
         localStorage.setItem("accessToken", accessToken);
         alert("Login successful!");
-
-        // TODO: Redirect to dashboard or homepage
-        // e.g. router.push('/dashboard');
+        router.push("/");
       } else {
         setError("Login failed");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      // Handle error response
       if (err.response && err.response.data && err.response.data.message) {
         setError(err.response.data.message);
       } else {
