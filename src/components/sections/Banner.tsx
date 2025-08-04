@@ -6,7 +6,7 @@ const Banner = () => {
   return (
     <section className="w-full h-[75vh] md:h-[90vh] relative ">
       <Image
-        src="/images/banner12.png"
+        src="/images/banner15.jpg"
         alt="PFEC Banner"
         fill
         priority
