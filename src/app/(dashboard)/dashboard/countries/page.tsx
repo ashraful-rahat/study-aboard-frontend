@@ -2,7 +2,19 @@
 
 import React, { useEffect, useState } from "react";
 import axiosInstance from "@/utils/axios";
-import { Search, Plus, Edit, Trash2, Eye, MapPin, Calendar, FileText, GraduationCap, Upload, X, Globe } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Calendar,
+  FileText,
+  GraduationCap,
+  Upload,
+  X,
+  Globe,
+} from "lucide-react";
 
 interface IDestination {
   _id?: string;
@@ -25,7 +37,8 @@ const CountryPage = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedDestination, setSelectedDestination] = useState<IDestination | null>(null);
+  const [selectedDestination, setSelectedDestination] =
+    useState<IDestination | null>(null);
 
   const fetchDestinations = async () => {
     try {
@@ -94,16 +107,20 @@ const CountryPage = () => {
   };
 
   // Filter destinations based on search term
-  const filteredDestinations = destinations.filter((destination) =>
-    destination.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    destination.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    destination.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredDestinations = destinations.filter(
+    (destination) =>
+      destination.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      destination.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      destination.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentDestinations = filteredDestinations.slice(indexOfFirstItem, indexOfLastItem);
+  const currentDestinations = filteredDestinations.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
   const totalPages = Math.ceil(filteredDestinations.length / itemsPerPage);
 
   if (loading) {
@@ -133,7 +150,9 @@ const CountryPage = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Destinations</h1>
-              <p className="text-gray-600 mt-1">Manage all study destinations in the system</p>
+              <p className="text-gray-600 mt-1">
+                Manage all study destinations in the system
+              </p>
             </div>
             <button
               onClick={() => setIsAddModalOpen(true)}
@@ -194,13 +213,21 @@ const CountryPage = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {currentDestinations.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                      {searchTerm ? "No destinations found matching your search." : "No destinations found."}
+                    <td
+                      colSpan={6}
+                      className="px-6 py-12 text-center text-gray-500"
+                    >
+                      {searchTerm
+                        ? "No destinations found matching your search."
+                        : "No destinations found."}
                     </td>
                   </tr>
                 ) : (
                   currentDestinations.map((destination) => (
-                    <tr key={destination._id} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={destination._id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-6 py-4">
                         <div className="flex items-center">
                           {destination.photo && (
@@ -254,14 +281,19 @@ const CountryPage = () => {
                             <Eye className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleEditDestinationClick(destination)}
+                            onClick={() =>
+                              handleEditDestinationClick(destination)
+                            }
                             className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                             title="Edit"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => destination._id && handleDeleteDestination(destination._id)}
+                            onClick={() =>
+                              destination._id &&
+                              handleDeleteDestination(destination._id)
+                            }
                             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete"
                           >
@@ -281,7 +313,9 @@ const CountryPage = () => {
             <div className="bg-white px-6 py-4 border-t border-gray-200">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-700">
-                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredDestinations.length)} of {filteredDestinations.length} results
+                  Showing {indexOfFirstItem + 1} to{" "}
+                  {Math.min(indexOfLastItem, filteredDestinations.length)} of{" "}
+                  {filteredDestinations.length} results
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
@@ -371,7 +405,7 @@ const AddDestinationModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const formToSend = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
@@ -382,7 +416,7 @@ const AddDestinationModal = ({
       if (selectedFile) {
         formToSend.append("photo", selectedFile);
       }
-      
+
       await onSubmit(formToSend);
       setFormData({
         name: "",
@@ -407,7 +441,9 @@ const AddDestinationModal = ({
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-800">Add New Destination</h2>
+          <h2 className="text-2xl font-bold text-gray-800">
+            Add New Destination
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -415,7 +451,7 @@ const AddDestinationModal = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -431,7 +467,7 @@ const AddDestinationModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Country *
@@ -445,7 +481,7 @@ const AddDestinationModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Best Time to Visit
@@ -459,7 +495,7 @@ const AddDestinationModal = ({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Visa Requirements
@@ -473,7 +509,7 @@ const AddDestinationModal = ({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Student Visa Info
@@ -487,7 +523,7 @@ const AddDestinationModal = ({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description *
@@ -501,7 +537,7 @@ const AddDestinationModal = ({
                 required
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Destination Photo
@@ -518,7 +554,9 @@ const AddDestinationModal = ({
                   />
                 </label>
                 {selectedFile && (
-                  <span className="text-sm text-gray-600">{selectedFile.name}</span>
+                  <span className="text-sm text-gray-600">
+                    {selectedFile.name}
+                  </span>
                 )}
               </div>
               {selectedFile && (
@@ -530,7 +568,7 @@ const AddDestinationModal = ({
               )}
             </div>
           </div>
-          
+
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <button
               type="button"
@@ -606,7 +644,7 @@ const EditDestinationModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!destination?._id) return;
-    
+
     setLoading(true);
     try {
       const formToSend = new FormData();
@@ -618,7 +656,7 @@ const EditDestinationModal = ({
       if (selectedFile) {
         formToSend.append("photo", selectedFile);
       }
-      
+
       await onSubmit(destination._id, formToSend);
       setSelectedFile(null);
       onClose();
@@ -643,7 +681,7 @@ const EditDestinationModal = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -659,7 +697,7 @@ const EditDestinationModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Country *
@@ -673,7 +711,7 @@ const EditDestinationModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Best Time to Visit
@@ -686,7 +724,7 @@ const EditDestinationModal = ({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Visa Requirements
@@ -699,7 +737,7 @@ const EditDestinationModal = ({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Student Visa Info
@@ -712,7 +750,7 @@ const EditDestinationModal = ({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description *
@@ -726,7 +764,7 @@ const EditDestinationModal = ({
                 required
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Destination Photo
@@ -743,19 +781,25 @@ const EditDestinationModal = ({
                   />
                 </label>
                 {selectedFile && (
-                  <span className="text-sm text-gray-600">{selectedFile.name}</span>
+                  <span className="text-sm text-gray-600">
+                    {selectedFile.name}
+                  </span>
                 )}
               </div>
               {(selectedFile || destination.photo) && (
                 <img
-                  src={selectedFile ? URL.createObjectURL(selectedFile) : destination.photo}
+                  src={
+                    selectedFile
+                      ? URL.createObjectURL(selectedFile)
+                      : destination.photo
+                  }
                   alt="Preview"
                   className="mt-3 h-32 rounded-lg object-cover"
                 />
               )}
             </div>
           </div>
-          
+
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <button
               type="button"
@@ -794,7 +838,9 @@ const ViewDestinationModal = ({
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-800">Destination Details</h2>
+          <h2 className="text-2xl font-bold text-gray-800">
+            Destination Details
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -802,7 +848,7 @@ const ViewDestinationModal = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <div className="p-6 space-y-6">
           {destination.photo && (
             <div className="w-full h-48 rounded-lg overflow-hidden">
@@ -813,13 +859,17 @@ const ViewDestinationModal = ({
               />
             </div>
           )}
-          
+
           <div className="space-y-4">
             <div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">{destination.name}</h3>
-              <p className="text-gray-600 leading-relaxed">{destination.description}</p>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                {destination.name}
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                {destination.description}
+              </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center space-x-3">
                 <Globe className="w-5 h-5 text-gray-500" />
@@ -828,7 +878,7 @@ const ViewDestinationModal = ({
                   <p className="font-medium">{destination.country}</p>
                 </div>
               </div>
-              
+
               {destination.bestTimeToVisit && (
                 <div className="flex items-center space-x-3">
                   <Calendar className="w-5 h-5 text-gray-500" />
@@ -838,17 +888,19 @@ const ViewDestinationModal = ({
                   </div>
                 </div>
               )}
-              
+
               {destination.visaRequirements && (
                 <div className="flex items-center space-x-3">
                   <FileText className="w-5 h-5 text-gray-500" />
                   <div>
                     <p className="text-sm text-gray-500">Visa Requirements</p>
-                    <p className="font-medium">{destination.visaRequirements}</p>
+                    <p className="font-medium">
+                      {destination.visaRequirements}
+                    </p>
                   </div>
                 </div>
               )}
-              
+
               {destination.studentVisa && (
                 <div className="flex items-center space-x-3">
                   <GraduationCap className="w-5 h-5 text-gray-500" />

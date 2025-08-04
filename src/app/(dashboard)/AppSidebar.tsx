@@ -111,6 +111,8 @@ const menuItems = [
   { title: "Courses", url: "/dashboard/courses", icon: BookOpen },
   { title: "Universities", url: "/dashboard/universities", icon: Building2 },
   { title: "Applications", url: "/dashboard/applications", icon: FileText },
+  { title: "Services", url: "/dashboard/service", icon: FileText },
+  { title: "Blog", url: "/dashboard/blogdashboard", icon: FileText },
   { title: "Users", url: "/dashboard/users", icon: Users },
 ];
 

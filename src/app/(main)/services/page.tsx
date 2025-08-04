@@ -1,7 +1,7 @@
 import React from "react";
 
 const page = () => {
-  return <div>schoolership</div>;
+  return <div>services</div>;
 };
 
 export default page;

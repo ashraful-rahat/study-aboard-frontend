@@ -274,7 +274,7 @@ const AboutPage = () => {
               </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We've helped thousands of students achieve their dreams of
+              We&lsquo;ve helped thousands of students achieve their dreams of
               studying abroad
             </p>
           </motion.div>
