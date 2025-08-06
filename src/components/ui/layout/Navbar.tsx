@@ -17,8 +17,8 @@ const navItems: NavItem[] = [
   { label: "Destination", href: "/country" },
   { label: "Our Services", href: "/services" },
   { label: "Blog", href: "/blog" },
-  { label: "Applications", href: "/applications" },
-  { label: "Scholarships", href: "/Schoolership" },
+  // { label: "Applications", href: "/applications" },
+  // { label: "Scholarships", href: "/Schoolership" },
   { label: "Contact us", href: "/contact" },
 ];
 

@@ -2,7 +2,19 @@
 
 import React, { useEffect, useState } from "react";
 import axiosInstance from "@/utils/axios";
-import { Search, Plus, Edit, Trash2, Eye, Clock, DollarSign, GraduationCap, BookOpen, Upload, X } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Clock,
+  DollarSign,
+  GraduationCap,
+  BookOpen,
+  Upload,
+  X,
+} from "lucide-react";
 
 interface ICourse {
   _id?: string;
@@ -95,18 +107,20 @@ const CoursesPage = () => {
     setIsEditModalOpen(true);
   };
 
-  // Filter courses based on search term
-  const filteredCourses = courses.filter((course) =>
-    course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.category?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCourses = courses.filter(
+    (course) =>
+      course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.category?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentCourses = filteredCourses.slice(indexOfFirstItem, indexOfLastItem);
+  const currentCourses = filteredCourses.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
   const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
 
   const getProgramTypeColor = (type: string) => {
@@ -144,12 +158,13 @@ const CoursesPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Courses</h1>
-              <p className="text-gray-600 mt-1">Manage all courses in the system</p>
+              <p className="text-gray-600 mt-1">
+                Manage all courses in the system
+              </p>
             </div>
             <button
               onClick={() => setIsAddModalOpen(true)}
@@ -161,7 +176,6 @@ const CoursesPage = () => {
           </div>
         </div>
 
-        {/* Search and Stats */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="relative flex-1 max-w-md">
@@ -181,7 +195,6 @@ const CoursesPage = () => {
           </div>
         </div>
 
-        {/* Courses Table */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -210,13 +223,21 @@ const CoursesPage = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {currentCourses.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                      {searchTerm ? "No courses found matching your search." : "No courses found."}
+                    <td
+                      colSpan={6}
+                      className="px-6 py-12 text-center text-gray-500"
+                    >
+                      {searchTerm
+                        ? "No courses found matching your search."
+                        : "No courses found."}
                     </td>
                   </tr>
                 ) : (
                   currentCourses.map((course) => (
-                    <tr key={course._id} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={course._id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-6 py-4">
                         <div className="flex items-center">
                           {course.photo && (
@@ -244,13 +265,17 @@ const CoursesPage = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center text-sm text-gray-900">
-                          <DollarSign className="w-4 h-4 mr-2 text-gray-400" />
-                          ${course.tuitionFee.toLocaleString()}
+                          <DollarSign className="w-4 h-4 mr-2 text-gray-400" />$
+                          {course.tuitionFee.toLocaleString()}
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         {course.programType ? (
-                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getProgramTypeColor(course.programType)}`}>
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getProgramTypeColor(
+                              course.programType
+                            )}`}
+                          >
                             {course.programType}
                           </span>
                         ) : (
@@ -280,7 +305,9 @@ const CoursesPage = () => {
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => course._id && handleDeleteCourse(course._id)}
+                            onClick={() =>
+                              course._id && handleDeleteCourse(course._id)
+                            }
                             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete"
                           >
@@ -295,12 +322,13 @@ const CoursesPage = () => {
             </table>
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="bg-white px-6 py-4 border-t border-gray-200">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-700">
-                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredCourses.length)} of {filteredCourses.length} results
+                  Showing {indexOfFirstItem + 1} to{" "}
+                  {Math.min(indexOfLastItem, filteredCourses.length)} of{" "}
+                  {filteredCourses.length} results
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
@@ -327,14 +355,12 @@ const CoursesPage = () => {
         </div>
       </div>
 
-      {/* Add Course Modal */}
       <AddCourseModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddCourse}
       />
 
-      {/* Edit Course Modal */}
       <EditCourseModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -342,7 +368,6 @@ const CoursesPage = () => {
         onSubmit={handleEditCourse}
       />
 
-      {/* View Course Modal */}
       <ViewCourseModal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
@@ -352,7 +377,6 @@ const CoursesPage = () => {
   );
 };
 
-// Add Course Modal Component
 const AddCourseModal = ({
   isOpen,
   onClose,
@@ -376,7 +400,9 @@ const AddCourseModal = ({
   const [loading, setLoading] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -388,22 +414,16 @@ const AddCourseModal = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedFile(e.target.files?.[0] || null);
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const formToSend = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value) {
-          formToSend.append(key, value);
-        }
-      });
+      formToSend.append("data", JSON.stringify(formData));
       if (selectedFile) {
         formToSend.append("photo", selectedFile);
       }
-      
       await onSubmit(formToSend);
       setFormData({
         name: "",
@@ -438,7 +458,7 @@ const AddCourseModal = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -454,7 +474,7 @@ const AddCourseModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Duration *
@@ -469,7 +489,7 @@ const AddCourseModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Tuition Fee *
@@ -484,7 +504,7 @@ const AddCourseModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 University ID *
@@ -498,7 +518,7 @@ const AddCourseModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Subject
@@ -511,7 +531,7 @@ const AddCourseModal = ({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Program Type
@@ -528,7 +548,7 @@ const AddCourseModal = ({
                 <option value="Diploma">Diploma</option>
               </select>
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Category
@@ -541,7 +561,7 @@ const AddCourseModal = ({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description *
@@ -555,7 +575,7 @@ const AddCourseModal = ({
                 required
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Course Photo
@@ -572,7 +592,9 @@ const AddCourseModal = ({
                   />
                 </label>
                 {selectedFile && (
-                  <span className="text-sm text-gray-600">{selectedFile.name}</span>
+                  <span className="text-sm text-gray-600">
+                    {selectedFile.name}
+                  </span>
                 )}
               </div>
               {selectedFile && (
@@ -584,7 +606,7 @@ const AddCourseModal = ({
               )}
             </div>
           </div>
-          
+
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <button
               type="button"
@@ -607,7 +629,6 @@ const AddCourseModal = ({
   );
 };
 
-// Edit Course Modal Component
 const EditCourseModal = ({
   isOpen,
   onClose,
@@ -648,7 +669,9 @@ const EditCourseModal = ({
   }, [course]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -664,19 +687,15 @@ const EditCourseModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!course?._id) return;
-    
+
     setLoading(true);
     try {
       const formToSend = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value) {
-          formToSend.append(key, value);
-        }
-      });
+      formToSend.append("data", JSON.stringify(formData));
       if (selectedFile) {
         formToSend.append("photo", selectedFile);
       }
-      
+
       await onSubmit(course._id, formToSend);
       setSelectedFile(null);
       onClose();
@@ -701,7 +720,7 @@ const EditCourseModal = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -717,7 +736,7 @@ const EditCourseModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Duration *
@@ -731,7 +750,7 @@ const EditCourseModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Tuition Fee *
@@ -746,7 +765,7 @@ const EditCourseModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 University ID *
@@ -760,7 +779,7 @@ const EditCourseModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Subject
@@ -773,7 +792,7 @@ const EditCourseModal = ({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Program Type
@@ -790,7 +809,7 @@ const EditCourseModal = ({
                 <option value="Diploma">Diploma</option>
               </select>
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Category
@@ -803,7 +822,7 @@ const EditCourseModal = ({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description *
@@ -817,7 +836,7 @@ const EditCourseModal = ({
                 required
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Course Photo
@@ -834,19 +853,25 @@ const EditCourseModal = ({
                   />
                 </label>
                 {selectedFile && (
-                  <span className="text-sm text-gray-600">{selectedFile.name}</span>
+                  <span className="text-sm text-gray-600">
+                    {selectedFile.name}
+                  </span>
                 )}
               </div>
               {(selectedFile || course.photo) && (
                 <img
-                  src={selectedFile ? URL.createObjectURL(selectedFile) : course.photo}
+                  src={
+                    selectedFile
+                      ? URL.createObjectURL(selectedFile)
+                      : course.photo
+                  }
                   alt="Preview"
                   className="mt-3 h-32 rounded-lg object-cover"
                 />
               )}
             </div>
           </div>
-          
+
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <button
               type="button"
@@ -869,7 +894,6 @@ const EditCourseModal = ({
   );
 };
 
-// View Course Modal Component
 const ViewCourseModal = ({
   isOpen,
   onClose,
@@ -906,7 +930,7 @@ const ViewCourseModal = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <div className="p-6 space-y-6">
           {course.photo && (
             <div className="w-full h-48 rounded-lg overflow-hidden">
@@ -917,13 +941,17 @@ const ViewCourseModal = ({
               />
             </div>
           )}
-          
+
           <div className="space-y-4">
             <div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">{course.name}</h3>
-              <p className="text-gray-600 leading-relaxed">{course.description}</p>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                {course.name}
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                {course.description}
+              </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center space-x-3">
                 <Clock className="w-5 h-5 text-gray-500" />
@@ -932,27 +960,33 @@ const ViewCourseModal = ({
                   <p className="font-medium">{course.duration}</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-3">
                 <DollarSign className="w-5 h-5 text-gray-500" />
                 <div>
                   <p className="text-sm text-gray-500">Tuition Fee</p>
-                  <p className="font-medium">${course.tuitionFee.toLocaleString()}</p>
+                  <p className="font-medium">
+                    ${course.tuitionFee.toLocaleString()}
+                  </p>
                 </div>
               </div>
-              
+
               {course.programType && (
                 <div className="flex items-center space-x-3">
                   <GraduationCap className="w-5 h-5 text-gray-500" />
                   <div>
                     <p className="text-sm text-gray-500">Program Type</p>
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getProgramTypeColor(course.programType)}`}>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getProgramTypeColor(
+                        course.programType
+                      )}`}
+                    >
                       {course.programType}
                     </span>
                   </div>
                 </div>
               )}
-              
+
               {course.subject && (
                 <div className="flex items-center space-x-3">
                   <BookOpen className="w-5 h-5 text-gray-500" />
@@ -962,7 +996,7 @@ const ViewCourseModal = ({
                   </div>
                 </div>
               )}
-              
+
               {course.category && (
                 <div className="flex items-center space-x-3 md:col-span-2">
                   <GraduationCap className="w-5 h-5 text-gray-500" />

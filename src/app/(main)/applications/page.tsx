@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/utils/axios";
+
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 
@@ -67,17 +68,70 @@ const ApplicationPage = () => {
         payload.append("photo", selectedPhoto);
       }
 
-      await axiosInstance.post("/applications/create-application", payload, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      // Use the authenticated axios instance for application submission
+      // since the backend requires authentication
+      const authenticatedAxios = axiosInstance;
 
-      alert("Application submitted successfully!");
-      router.push("/");
-    } catch (err) {
+      // Try different endpoints for application submission
+      const endpoints = [
+        "/applications/create-application", // Requires auth
+        "/applications", // Generic create
+        "/applications/submit", // Submit action
+        "/public/applications", // Public endpoint
+      ];
+
+      let success = false;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let lastError: any = null;
+
+      for (const endpoint of endpoints) {
+        try {
+          await authenticatedAxios.post(endpoint, payload, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
+          success = true;
+          console.log(`✅ Application submitted successfully via ${endpoint}`);
+          break;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+          lastError = error;
+          console.log(
+            `❌ Failed to submit via ${endpoint}: ${error.response?.status}`
+          );
+          continue;
+        }
+      }
+
+      if (success) {
+        alert("Application submitted successfully!");
+        router.push("/");
+      } else {
+        throw lastError;
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
       console.error("Application submission failed:", err);
-      alert("Failed to submit. Try again.");
+
+      // Provide more specific error messages
+      if (err.response?.status === 401) {
+        alert(
+          "Authentication required. Please log in to submit your application. If you don't have an account, please register first."
+        );
+      } else if (err.response?.status === 404) {
+        alert("Application endpoint not found. Please contact support.");
+      } else if (err.response?.status === 400) {
+        alert("Invalid data. Please check your information and try again.");
+      } else if (err.response?.status === 500) {
+        alert("Server error. Please try again later.");
+      } else {
+        alert(
+          `Failed to submit application: ${
+            err.response?.data?.message || err.message
+          }`
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -101,7 +155,32 @@ const ApplicationPage = () => {
     };
 
     fetchAll();
+    testApplicationEndpoints();
   }, []);
+
+  // Test function to check available application endpoints
+  const testApplicationEndpoints = async () => {
+    const endpoints = [
+      "/applications/create-application",
+      "/applications",
+      "/applications/submit",
+      "/public/applications",
+    ];
+
+    console.log("Testing available application endpoints...");
+
+    for (const endpoint of endpoints) {
+      try {
+        const response = await axiosInstance.get(endpoint);
+        console.log(`✅ ${endpoint} - Status: ${response.status}`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        console.log(
+          `❌ ${endpoint} - Status: ${error.response?.status || "No response"}`
+        );
+      }
+    }
+  };
 
   const getDestinationNameById = (id: string) => {
     const dest = destinations.find((d) => d._id === id);

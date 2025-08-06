@@ -20,10 +20,11 @@ export default function LoginForm() {
       });
 
       if (res.data.success) {
-        const { accessToken } = res.data.data;
+        const { accessToken, user } = res.data.data;
         localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("user", JSON.stringify(user)); // <-- Store user
         alert("Login successful!");
-        router.push("/");
+        router.push("/dashboard/universities"); // Go directly to dashboard
       } else {
         setError("Login failed");
       }

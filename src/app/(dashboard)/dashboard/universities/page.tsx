@@ -1,8 +1,23 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useEffect, useState } from "react";
 import axiosInstance from "@/utils/axios";
-import { Search, Plus, Edit, Trash2, Eye, Globe, MapPin, Calendar, Upload, X } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Globe,
+  MapPin,
+  Calendar,
+  Upload,
+  X,
+} from "lucide-react";
 
 interface IUniversity {
   _id?: string;
@@ -19,6 +34,9 @@ interface IUniversity {
 }
 
 const UniversityPage = () => {
+  const { user, loading: authLoading, isAdmin } = useAuth();
+  const router = useRouter();
+
   const [universities, setUniversities] = useState<IUniversity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,15 +46,31 @@ const UniversityPage = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedUniversity, setSelectedUniversity] = useState<IUniversity | null>(null);
+  const [selectedUniversity, setSelectedUniversity] =
+    useState<IUniversity | null>(null);
+
+  // // Check authentication and admin role
+  // useEffect(() => {
+  //   if (!authLoading) {
+  //     if (!user) {
+  //       router.push('/Login');
+  //       return;
+  //     }
+  //     if (!isAdmin) {
+  //       router.push('/');
+  //       return;
+  //     }
+  //   }
+  // }, [user, authLoading, isAdmin, router]);
 
   const fetchUniversities = async () => {
     try {
       setLoading(true);
       const res = await axiosInstance.get("/universities");
       setUniversities(res.data.data);
-    } catch (error) {
-      setError("Failed to fetch universities");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      setError(error.response?.data?.message || "Failed to fetch universities");
       console.error("Failed to fetch universities:", error);
     } finally {
       setLoading(false);
@@ -54,9 +88,11 @@ const UniversityPage = () => {
       });
       alert("University created successfully!");
       fetchUniversities();
-    } catch (error) {
+      setIsAddModalOpen(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error(error);
-      alert("Failed to create university");
+      alert(error.response?.data?.message || "Failed to create university");
     }
   };
 
@@ -67,9 +103,11 @@ const UniversityPage = () => {
       });
       alert("University updated successfully!");
       fetchUniversities();
-    } catch (error) {
+      setIsEditModalOpen(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error(error);
-      alert("Failed to update university");
+      alert(error.response?.data?.message || "Failed to update university");
     }
   };
 
@@ -80,9 +118,10 @@ const UniversityPage = () => {
       await axiosInstance.delete(`/universities/${id}`);
       alert("University deleted successfully!");
       fetchUniversities();
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error(error);
-      alert("Failed to delete university");
+      alert(error.response?.data?.message || "Failed to delete university");
     }
   };
 
@@ -96,23 +135,38 @@ const UniversityPage = () => {
     setIsEditModalOpen(true);
   };
 
-  // Filter universities based on search term
-  const filteredUniversities = universities.filter((uni) =>
-    uni.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    uni.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    uni.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUniversities = universities.filter(
+    (uni) =>
+      uni.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      uni.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      uni.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentUniversities = filteredUniversities.slice(indexOfFirstItem, indexOfLastItem);
+  const currentUniversities = filteredUniversities.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
   const totalPages = Math.ceil(filteredUniversities.length / itemsPerPage);
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-500 text-xl mb-2">Access Denied</div>
+          <div className="text-gray-600">
+            You need to be logged in to access this page.
+          </div>
+        </div>
       </div>
     );
   }
@@ -123,6 +177,12 @@ const UniversityPage = () => {
         <div className="text-center">
           <div className="text-red-500 text-xl mb-2">Error</div>
           <div className="text-gray-600">{error}</div>
+          <button
+            onClick={fetchUniversities}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -131,12 +191,13 @@ const UniversityPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Universities</h1>
-              <p className="text-gray-600 mt-1">Manage all universities in the system</p>
+              <p className="text-gray-600 mt-1">
+                Manage all universities in the system
+              </p>
             </div>
             <button
               onClick={() => setIsAddModalOpen(true)}
@@ -148,7 +209,6 @@ const UniversityPage = () => {
           </div>
         </div>
 
-        {/* Search and Stats */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="relative flex-1 max-w-md">
@@ -168,7 +228,6 @@ const UniversityPage = () => {
           </div>
         </div>
 
-        {/* Universities Table */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -194,13 +253,21 @@ const UniversityPage = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {currentUniversities.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                      {searchTerm ? "No universities found matching your search." : "No universities found."}
+                    <td
+                      colSpan={5}
+                      className="px-6 py-12 text-center text-gray-500"
+                    >
+                      {searchTerm
+                        ? "No universities found matching your search."
+                        : "No universities found."}
                     </td>
                   </tr>
                 ) : (
                   currentUniversities.map((university) => (
-                    <tr key={university._id} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={university._id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-6 py-4">
                         <div className="flex items-center">
                           {university.photo && (
@@ -257,14 +324,19 @@ const UniversityPage = () => {
                             <Eye className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleEditUniversityClick(university)}
+                            onClick={() =>
+                              handleEditUniversityClick(university)
+                            }
                             className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                             title="Edit"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => university._id && handleDeleteUniversity(university._id)}
+                            onClick={() =>
+                              university._id &&
+                              handleDeleteUniversity(university._id)
+                            }
                             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete"
                           >
@@ -279,12 +351,13 @@ const UniversityPage = () => {
             </table>
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="bg-white px-6 py-4 border-t border-gray-200">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-700">
-                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredUniversities.length)} of {filteredUniversities.length} results
+                  Showing {indexOfFirstItem + 1} to{" "}
+                  {Math.min(indexOfLastItem, filteredUniversities.length)} of{" "}
+                  {filteredUniversities.length} results
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
@@ -311,14 +384,12 @@ const UniversityPage = () => {
         </div>
       </div>
 
-      {/* Add University Modal */}
       <AddUniversityModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddUniversity}
       />
 
-      {/* Edit University Modal */}
       <EditUniversityModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -326,7 +397,6 @@ const UniversityPage = () => {
         onSubmit={handleEditUniversity}
       />
 
-      {/* View University Modal */}
       <ViewUniversityModal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
@@ -336,7 +406,6 @@ const UniversityPage = () => {
   );
 };
 
-// Add University Modal Component
 const AddUniversityModal = ({
   isOpen,
   onClose,
@@ -374,18 +443,28 @@ const AddUniversityModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const formToSend = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value) {
-          formToSend.append(key, value);
-        }
-      });
+
+      // Create data object and stringify it for backend
+      const dataObj = {
+        name: formData.name,
+        description: formData.description,
+        location: formData.location,
+        destinationId: formData.destinationId,
+        establishedYear: formData.establishedYear
+          ? parseInt(formData.establishedYear)
+          : undefined,
+        website: formData.website || undefined,
+      };
+
+      formToSend.append("data", JSON.stringify(dataObj));
+
       if (selectedFile) {
         formToSend.append("photo", selectedFile);
       }
-      
+
       await onSubmit(formToSend);
       setFormData({
         name: "",
@@ -396,7 +475,6 @@ const AddUniversityModal = ({
         website: "",
       });
       setSelectedFile(null);
-      onClose();
     } catch (error) {
       console.error(error);
     } finally {
@@ -410,7 +488,9 @@ const AddUniversityModal = ({
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-800">Add New University</h2>
+          <h2 className="text-2xl font-bold text-gray-800">
+            Add New University
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -418,7 +498,7 @@ const AddUniversityModal = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -434,7 +514,7 @@ const AddUniversityModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Location *
@@ -448,7 +528,7 @@ const AddUniversityModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Destination ID *
@@ -462,7 +542,7 @@ const AddUniversityModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Established Year
@@ -477,7 +557,7 @@ const AddUniversityModal = ({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Website URL
@@ -490,7 +570,7 @@ const AddUniversityModal = ({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description *
@@ -504,7 +584,7 @@ const AddUniversityModal = ({
                 required
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 University Photo
@@ -521,7 +601,9 @@ const AddUniversityModal = ({
                   />
                 </label>
                 {selectedFile && (
-                  <span className="text-sm text-gray-600">{selectedFile.name}</span>
+                  <span className="text-sm text-gray-600">
+                    {selectedFile.name}
+                  </span>
                 )}
               </div>
               {selectedFile && (
@@ -533,7 +615,7 @@ const AddUniversityModal = ({
               )}
             </div>
           </div>
-          
+
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <button
               type="button"
@@ -609,22 +691,31 @@ const EditUniversityModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!university?._id) return;
-    
+
     setLoading(true);
     try {
       const formToSend = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value) {
-          formToSend.append(key, value);
-        }
-      });
+
+      // Create data object and stringify it for backend
+      const dataObj = {
+        name: formData.name,
+        description: formData.description,
+        location: formData.location,
+        destinationId: formData.destinationId,
+        establishedYear: formData.establishedYear
+          ? parseInt(formData.establishedYear)
+          : undefined,
+        website: formData.website || undefined,
+      };
+
+      formToSend.append("data", JSON.stringify(dataObj));
+
       if (selectedFile) {
         formToSend.append("photo", selectedFile);
       }
-      
+
       await onSubmit(university._id, formToSend);
       setSelectedFile(null);
-      onClose();
     } catch (error) {
       console.error(error);
     } finally {
@@ -646,7 +737,7 @@ const EditUniversityModal = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -662,7 +753,7 @@ const EditUniversityModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Location *
@@ -676,7 +767,7 @@ const EditUniversityModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Destination ID *
@@ -690,7 +781,7 @@ const EditUniversityModal = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Established Year
@@ -705,7 +796,7 @@ const EditUniversityModal = ({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Website URL
@@ -718,7 +809,7 @@ const EditUniversityModal = ({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description *
@@ -732,7 +823,7 @@ const EditUniversityModal = ({
                 required
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 University Photo
@@ -749,19 +840,25 @@ const EditUniversityModal = ({
                   />
                 </label>
                 {selectedFile && (
-                  <span className="text-sm text-gray-600">{selectedFile.name}</span>
+                  <span className="text-sm text-gray-600">
+                    {selectedFile.name}
+                  </span>
                 )}
               </div>
               {(selectedFile || university.photo) && (
                 <img
-                  src={selectedFile ? URL.createObjectURL(selectedFile) : university.photo}
+                  src={
+                    selectedFile
+                      ? URL.createObjectURL(selectedFile)
+                      : university.photo
+                  }
                   alt="Preview"
                   className="mt-3 h-32 rounded-lg object-cover"
                 />
               )}
             </div>
           </div>
-          
+
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <button
               type="button"
@@ -800,7 +897,9 @@ const ViewUniversityModal = ({
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-800">University Details</h2>
+          <h2 className="text-2xl font-bold text-gray-800">
+            University Details
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -808,7 +907,7 @@ const ViewUniversityModal = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <div className="p-6 space-y-6">
           {university.photo && (
             <div className="w-full h-48 rounded-lg overflow-hidden">
@@ -819,13 +918,17 @@ const ViewUniversityModal = ({
               />
             </div>
           )}
-          
+
           <div className="space-y-4">
             <div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">{university.name}</h3>
-              <p className="text-gray-600 leading-relaxed">{university.description}</p>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                {university.name}
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                {university.description}
+              </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center space-x-3">
                 <MapPin className="w-5 h-5 text-gray-500" />
@@ -834,7 +937,7 @@ const ViewUniversityModal = ({
                   <p className="font-medium">{university.location}</p>
                 </div>
               </div>
-              
+
               {university.establishedYear && (
                 <div className="flex items-center space-x-3">
                   <Calendar className="w-5 h-5 text-gray-500" />
@@ -844,7 +947,7 @@ const ViewUniversityModal = ({
                   </div>
                 </div>
               )}
-              
+
               {university.website && (
                 <div className="flex items-center space-x-3 md:col-span-2">
                   <Globe className="w-5 h-5 text-gray-500" />

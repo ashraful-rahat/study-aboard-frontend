@@ -16,7 +16,7 @@ interface IService {
   slug: string;
   shortDescription: string;
   content: string;
-  icon?: File | null;
+
   coverImage?: File | null;
   faq: IFAQItem[];
   createdAt?: string;
@@ -36,7 +36,7 @@ const ServicesPage = () => {
     slug: "",
     shortDescription: "",
     content: "",
-    icon: null,
+
     coverImage: null,
     faq: [{ question: "", answer: "" }],
   });
@@ -96,7 +96,7 @@ const ServicesPage = () => {
       slug: "",
       shortDescription: "",
       content: "",
-      icon: null,
+
       coverImage: null,
       faq: [{ question: "", answer: "" }],
     });
@@ -113,9 +113,6 @@ const ServicesPage = () => {
     formData.append("shortDescription", serviceData.shortDescription);
     formData.append("content", serviceData.content);
 
-    if (serviceData.icon) {
-      formData.append("icon", serviceData.icon);
-    }
     if (serviceData.coverImage) {
       formData.append("coverImage", serviceData.coverImage);
     }
@@ -125,7 +122,7 @@ const ServicesPage = () => {
     try {
       if (editingService?._id) {
         // Update existing service
-        await axiosInstance.put(`/services/${editingService._id}`, formData, {
+        await axiosInstance.patch(`/services/${editingService._id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -140,7 +137,7 @@ const ServicesPage = () => {
         });
         alert("Service added successfully!");
       }
-      
+
       fetchServices();
       resetForm();
       setShowForm(false);
@@ -159,9 +156,10 @@ const ServicesPage = () => {
       slug: service.slug,
       shortDescription: service.shortDescription,
       content: service.content,
-      icon: null,
+
       coverImage: null,
-      faq: service.faq.length > 0 ? service.faq : [{ question: "", answer: "" }],
+      faq:
+        service.faq.length > 0 ? service.faq : [{ question: "", answer: "" }],
     });
     setShowForm(true);
   };
@@ -178,9 +176,10 @@ const ServicesPage = () => {
     }
   };
 
-  const filteredServices = services.filter(service =>
-    service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    service.slug.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredServices = services.filter(
+    (service) =>
+      service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service.slug.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -190,8 +189,12 @@ const ServicesPage = () => {
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Services Management</h1>
-              <p className="text-gray-600 mt-2">Manage all your services and offerings</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Services Management
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Manage all your services and offerings
+              </p>
             </div>
             <Button
               onClick={() => {
@@ -200,8 +203,18 @@ const ServicesPage = () => {
               }}
               className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
               </svg>
               Add New Service
             </Button>
@@ -213,8 +226,18 @@ const ServicesPage = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex-1 max-w-md">
               <div className="relative">
-                <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
                 <Input
                   type="text"
@@ -227,7 +250,9 @@ const ServicesPage = () => {
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">{services.length}</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {services.length}
+                </div>
                 <div className="text-sm text-gray-600">Total Services</div>
               </div>
             </div>
@@ -245,12 +270,24 @@ const ServicesPage = () => {
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">FAQs</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Service
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Slug
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Description
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      FAQs
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Created
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -264,17 +301,31 @@ const ServicesPage = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            <svg
+                              className="w-6 h-6 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 10V3L4 14h7v7l9-11h-7z"
+                              />
                             </svg>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{service.title}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {service.title}
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{service.slug}</div>
+                        <div className="text-sm text-gray-900">
+                          {service.slug}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900 max-w-xs truncate">
@@ -287,7 +338,9 @@ const ServicesPage = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {service.createdAt ? new Date(service.createdAt).toLocaleDateString() : 'N/A'}
+                        {service.createdAt
+                          ? new Date(service.createdAt).toLocaleDateString()
+                          : "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
@@ -297,8 +350,18 @@ const ServicesPage = () => {
                             size="sm"
                             className="text-blue-600 hover:text-blue-900 border-blue-600 hover:bg-blue-50"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
                             </svg>
                           </Button>
                           <Button
@@ -307,8 +370,18 @@ const ServicesPage = () => {
                             size="sm"
                             className="text-red-600 hover:text-red-900 border-red-600 hover:bg-red-50"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
                             </svg>
                           </Button>
                         </div>
@@ -319,12 +392,26 @@ const ServicesPage = () => {
               </table>
               {filteredServices.length === 0 && (
                 <div className="text-center py-12">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No services found</h3>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                    No services found
+                  </h3>
                   <p className="mt-1 text-sm text-gray-500">
-                    {searchTerm ? "Try adjusting your search terms." : "Get started by creating a new service."}
+                    {searchTerm
+                      ? "Try adjusting your search terms."
+                      : "Get started by creating a new service."}
                   </p>
                 </div>
               )}
@@ -360,8 +447,18 @@ const ServicesPage = () => {
                       size="sm"
                       className="text-gray-400 hover:text-gray-600"
                     >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </Button>
                   </div>
@@ -370,7 +467,9 @@ const ServicesPage = () => {
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Title *</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Title *
+                      </label>
                       <Input
                         type="text"
                         name="title"
@@ -382,7 +481,9 @@ const ServicesPage = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Slug *</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Slug *
+                      </label>
                       <Input
                         type="text"
                         name="slug"
@@ -396,7 +497,9 @@ const ServicesPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Short Description *</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Short Description *
+                    </label>
                     <textarea
                       name="shortDescription"
                       value={serviceData.shortDescription}
@@ -409,7 +512,9 @@ const ServicesPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Content *</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Content *
+                    </label>
                     <textarea
                       name="content"
                       value={serviceData.content}
@@ -422,18 +527,11 @@ const ServicesPage = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div></div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Icon</label>
-                      <Input
-                        type="file"
-                        name="icon"
-                        onChange={handleChange}
-                        accept="image/*"
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Cover Image</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Cover Image
+                      </label>
                       <Input
                         type="file"
                         name="coverImage"
@@ -446,7 +544,9 @@ const ServicesPage = () => {
 
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900">FAQs</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        FAQs
+                      </h3>
                       <Button
                         type="button"
                         onClick={handleAddFaq}
@@ -454,18 +554,33 @@ const ServicesPage = () => {
                         size="sm"
                         className="text-orange-600 border-orange-600 hover:bg-orange-50"
                       >
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        <svg
+                          className="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          />
                         </svg>
                         Add FAQ
                       </Button>
                     </div>
-                    
+
                     <div className="space-y-4">
                       {serviceData.faq.map((item, index) => (
-                        <div key={index} className="border border-gray-200 rounded-lg p-4">
+                        <div
+                          key={index}
+                          className="border border-gray-200 rounded-lg p-4"
+                        >
                           <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm font-medium text-gray-700">FAQ {index + 1}</span>
+                            <span className="text-sm font-medium text-gray-700">
+                              FAQ {index + 1}
+                            </span>
                             {serviceData.faq.length > 1 && (
                               <Button
                                 type="button"
@@ -474,8 +589,18 @@ const ServicesPage = () => {
                                 size="sm"
                                 className="text-red-600 hover:text-red-800 hover:bg-red-50"
                               >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
                                 </svg>
                               </Button>
                             )}
@@ -519,14 +644,32 @@ const ServicesPage = () => {
                     >
                       {loading ? (
                         <div className="flex items-center">
-                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          <svg
+                            className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
                           </svg>
                           {editingService ? "Updating..." : "Creating..."}
                         </div>
+                      ) : editingService ? (
+                        "Update Service"
                       ) : (
-                        editingService ? "Update Service" : "Create Service"
+                        "Create Service"
                       )}
                     </Button>
                   </div>
@@ -555,13 +698,26 @@ const ServicesPage = () => {
               >
                 <div className="text-center">
                   <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                    <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    <svg
+                      className="h-6 w-6 text-red-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                      />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Delete Service</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Delete Service
+                  </h3>
                   <p className="text-sm text-gray-500 mb-6">
-                    Are you sure you want to delete this service? This action cannot be undone.
+                    Are you sure you want to delete this service? This action
+                    cannot be undone.
                   </p>
                   <div className="flex items-center justify-center space-x-3">
                     <Button
