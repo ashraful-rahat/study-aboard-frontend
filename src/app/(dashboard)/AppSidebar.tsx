@@ -126,14 +126,14 @@ export function AppSidebar() {
           <div className="p-2 bg-white/10 rounded-lg">
             <GraduationCap className="h-6 w-6 text-sidebar-text-active" />
           </div>
-          <div>
+          <Link href="/" className="block">
             <h2 className="text-lg font-bold text-sidebar-text-active">
               EduPortal
             </h2>
             <p className="text-xs text-sidebar-text opacity-70">
               Admin Dashboard
             </p>
-          </div>
+          </Link>
         </div>
       </SidebarHeader>
 

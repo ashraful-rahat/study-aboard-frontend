@@ -95,33 +95,23 @@ const BlogDashboard = () => {
       Array.isArray(blogData.tags) ? blogData.tags.join(",") : blogData.tags
     );
 
-    // Handle file upload if needed
-    const fileInput = document.querySelector(
-      'input[name="photo"]'
-    ) as HTMLInputElement;
-    if (fileInput && fileInput.files && fileInput.files[0]) {
-      formData.append("photo", fileInput.files[0]);
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput?.files?.[0]) {
+      formData.append("coverImage", fileInput.files[0]);
     }
 
     try {
       if (editingBlog?._id) {
-        // Update existing blog
-        await axiosInstance.put(`/blogs/${editingBlog._id}`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+        await axiosInstance.patch(`/blogs/${editingBlog._id}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" }
         });
         alert("Blog updated successfully!");
       } else {
-        // Create new blog
         await axiosInstance.post("/blogs/create-blog", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          headers: { "Content-Type": "multipart/form-data" }
         });
         alert("Blog created successfully!");
       }
-
       fetchBlogs();
       resetForm();
       setShowForm(false);

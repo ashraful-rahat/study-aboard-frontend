@@ -1,22 +1,35 @@
 import { useState, useEffect } from "react";
 
 export const useAuth = () => {
-  const [user, setUser] = useState(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    setUser(userStr ? JSON.parse(userStr) : null);
-    setLoading(false);
+    if (typeof window !== "undefined") {
+      const userStr = localStorage.getItem("user");
+      const token = localStorage.getItem("accessToken");
+
+      if (userStr) {
+        setUser(JSON.parse(userStr));
+      }
+      if (token && userStr) {
+        setIsAuthenticated(true);
+      }
+      setLoading(false);
+    }
   }, []);
 
-  const isAuthenticated = !!localStorage.getItem("accessToken") && !!user;
   const isAdmin = user?.role === "admin";
 
   const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+    }
     setUser(null);
+    setIsAuthenticated(false);
   };
 
   return { user, loading, isAuthenticated, isAdmin, logout };

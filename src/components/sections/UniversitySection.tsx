@@ -21,16 +21,26 @@ interface University {
 const UniversityShowcase = () => {
   const [universities, setUniversities] = useState<University[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUniversities = async () => {
       try {
+        setLoading(true);
+        setError(null);
         const res = await axiosInstance.get("/universities");
-        // Limit to first 6 universities for homepage
-        setUniversities(res.data.data.slice(0, 6));
-      } catch (err) {
+        if (res.data && res.data.data) {
+          setUniversities(res.data.data.slice(0, 6));
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (err: any) {
         console.error("Failed to fetch universities:", err);
-        // Fallback data for development if API fails
+        setError(
+          err.code === 'ECONNABORTED'
+            ? "Connection timeout. Please check your internet connection and try again."
+            : "Failed to load universities. Please try again later."
+        );
         setUniversities([]);
       } finally {
         setLoading(false);
